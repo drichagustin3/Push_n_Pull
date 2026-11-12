@@ -44,8 +44,8 @@ npm test
 ```
 
 `GET /health` is a liveness endpoint. It does not query the database on each
-request. Other routes return JSON 404 responses. There are no user, authentication,
-permissions, or business-module endpoints yet.
+request. Registration is available at `/register`; see the
+[S1-DEV-02 integration notes](docs/S1-DEV-02.md). Unimplemented routes return JSON 404 responses.
 
 ### Configuration
 
