@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register | Hope, Inc. ERP</title>
+  <link rel="stylesheet" href="/register.css">
+  <script src="/register.js" defer></script>
+</head>
+<body>
+  <main>
+    <p class="brand">HOPE, INC. ERP</p>
+    <h1>Create your account</h1>
+    <p>Join Hope, Inc. ERP</p>
+    <p class="note">New accounts are created as User and require administrator approval.</p>
+    <form id="registerForm">
+      <div class="names">
+        <label for="regFirstName">First name<input id="regFirstName" name="firstName" autocomplete="given-name" maxlength="100" required></label>
+        <label for="regLastName">Last name<input id="regLastName" name="lastName" autocomplete="family-name" maxlength="100" required></label>
+      </div>
+      <label for="regEmail">Email address<input id="regEmail" name="email" type="email" autocomplete="email" maxlength="254" required></label>
+      <label for="regPassword">Password<input id="regPassword" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="72" aria-describedby="passwordHelp" required></label>
+      <p id="passwordHelp">At least 12 characters, including uppercase, lowercase, and a number. Maximum 72 UTF-8 bytes.</p>
+      <label for="regConfirmPassword">Confirm password<input id="regConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" maxlength="72" required></label>
+      <p id="registerError" role="alert" tabindex="-1"></p>
+      <p id="registerSuccess" role="status" tabindex="-1"></p>
+      <button type="submit">Register</button>
+    </form>
+  </main>
+</body>
+</html>

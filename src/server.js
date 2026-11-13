@@ -4,7 +4,7 @@ const { ConfigurationError, loadConfig } = require('./config/env');
 const { createPool, verifyConnection } = require('./db/pool');
 
 async function startServer({ config, pool }) {
-  const server = createServer(createApp());
+  const server = createServer(createApp({ pool }));
   try {
     await verifyConnection(pool);
     await new Promise((resolve, reject) => {
