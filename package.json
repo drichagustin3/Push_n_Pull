@@ -1,0 +1,19 @@
+{
+  "name": "hope-inc-erp",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HOPE, Inc. ERP Express backend",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "db:check": "node scripts/check-db.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "pg": "^8.23.1"
+  }
+}
