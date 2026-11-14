@@ -5,7 +5,7 @@
 | Team Member | Role |
 | :--- | :--- |
 | **Aldrich Rodolf Agustin** | 🥇 `Scrum Master` |
-| **_** | 🎨 `UI/UX Developer` |
+| **Ashley Nicole Marticio** | 🎨 `UI/UX Developer` |
 | **_** | ⚙️ `Backend Developer` |
 | 🗄️ `DB Admin` |
 | 🔍 `Tester` |
