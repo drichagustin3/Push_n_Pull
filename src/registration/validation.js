@@ -1,4 +1,5 @@
 const fields = ['firstName', 'lastName', 'email', 'password', 'confirmPassword'];
+const { isStrongPassword } = require('../security/password');
 
 function validateRegistration(body) {
   const errors = {};
@@ -21,7 +22,7 @@ function validateRegistration(body) {
     errors.email = 'Enter a valid email address of at most 254 characters.';
   } else data.email = email;
   const password = body.password;
-  if (typeof password !== 'string' || [...password].length < 12 || Buffer.byteLength(password, 'utf8') > 72 || /\u0000/u.test(password) || !/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+  if (!isStrongPassword(password)) {
     errors.password = 'Use at least 12 characters with uppercase, lowercase, and a number; maximum 72 UTF-8 bytes.';
   } else data.password = password;
   if (typeof body.confirmPassword !== 'string' || body.confirmPassword !== password) {
