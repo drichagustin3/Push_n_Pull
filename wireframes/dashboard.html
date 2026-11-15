@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Hope, Inc. ERP</title>
+    <!-- Link to your design tokens from S1-UIX-01 -->
+    <link rel="stylesheet" href="../css/tokens.css">
+    <style>
+        /* Base Workspace Reset & Layout */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #F8FAFC; color: #1E293B; overflow: hidden; }
+
+        /* Sidebar (#0F172A / #1E293B) */
+        aside {
+            width: 260px;
+            background-color: #0F172A;
+            color: #94A3B8;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #1E293B;
+        }
+        .sidebar-brand {
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            background-color: #1E293B;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-nav {
+            list-style: none;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+        .sidebar-nav a {
+            color: #94A3B8;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: block;
+            transition: all 0.2s ease;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #1E293B;
+            color: #FFFFFF;
+        }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Sticky Top Header */
+        header {
+            height: 70px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header-title { font-size: 1.25rem; font-weight: 600; color: #0F172A; }
+        .user-profile-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .role-badge {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .logout-btn {
+            color: #EF4444;
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border: 1px solid #FCA5A5;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+        .logout-btn:hover { background-color: #FEF2F2; }
+
+        /* Dashboard Canvas */
+        .content-canvas {
+            padding: 30px;
+            max-width: 1200px;
+            width: 100%;
+        }
+        .welcome-card {
+            background: linear-gradient(135deg, #1E3A8A 0%, #2563EB 100%);
+            color: #FFFFFF;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .welcome-card h1 { font-size: 1.75rem; margin-bottom: 8px; }
+        .welcome-card p { opacity: 0.9; font-size: 1rem; }
+
+        /* Module Grid Cards */
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        .card h3 { font-size: 1.1rem; color: #0F172A; margin-bottom: 8px; }
+        .card p { font-size: 0.9rem; color: #64748B; margin-bottom: 15px; }
+        .card-link {
+            color: #2563EB;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+        .card-link:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- Collapsible Sidebar -->
+    <aside>
+        <div class="sidebar-brand">Hope, Inc. ERP</div>
+        <ul class="sidebar-nav">
+            <li><a href="dashboard.html" class="active">📊 Dashboard</a></li>
+            <li><a href="user-management.html">👥 User Management</a></li>
+            <li><a href="#">📦 Inventory Module</a></li>
+            <li><a href="#">💰 Finance Module</a></li>
+            <li><a href="#">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content Wrapper -->
+    <div class="main-wrapper">
+        <!-- Sticky Top Header -->
+        <header>
+            <div class="header-title">Workspace Dashboard</div>
+            <div class="user-profile-area">
+                <span class="role-badge">Superadmin</span>
+                <span style="font-size: 0.9rem; font-weight: 500;">Ashley Marticio</span>
+                <a href="login.html" class="logout-btn">Logout</a>
+            </div>
+        </header>
+
+        <!-- Dashboard Landing Canvas -->
+        <div class="content-canvas">
+            <div class="welcome-card">
+                <h1>Welcome back, Ashley!</h1>
+                <p>Here is an overview of your Hope, Inc. ERP workspace. Select a module below to get started.</p>
+            </div>
+
+            <div class="module-grid">
+                <div class="card">
+                    <h3>User Management</h3>
+                    <p>Manage system users, assign access roles, and control permission rights matrices.</p>
+                    <a href="user-management.html" class="card-link">Open Management &rarr;</a>
+                </div>
+                <div class="card">
+                    <h3>Inventory Control</h3>
+                    <p>Track stock levels, warehouse allocations, and supply chain updates.</p>
+                    <a href="#" class="card-link">View Inventory &rarr;</a>
+                </div>
+                <div class="card">
+                    <h3>Financial Reports</h3>
+                    <p>Inspect ledger accounts, invoices, and automated transactional statements.</p>
+                    <a href="#" class="card-link">View Finances &rarr;</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
