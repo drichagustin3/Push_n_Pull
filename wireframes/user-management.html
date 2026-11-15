@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management - Hope, Inc. ERP</title>
+    <link rel="stylesheet" href="../css/tokens.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #F8FAFC; color: #1E293B; overflow: hidden; }
+
+        /* Sidebar */
+        aside {
+            width: 260px;
+            background-color: #0F172A;
+            color: #94A3B8;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #1E293B;
+        }
+        .sidebar-brand {
+            padding: 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #FFFFFF;
+            background-color: #1E293B;
+            border-bottom: 1px solid #334155;
+        }
+        .sidebar-nav {
+            list-style: none;
+            padding: 15px 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            flex-grow: 1;
+        }
+        .sidebar-nav a {
+            color: #94A3B8;
+            text-decoration: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-size: 0.95rem;
+            display: block;
+            transition: all 0.2s ease;
+        }
+        .sidebar-nav a:hover, .sidebar-nav a.active {
+            background-color: #1E293B;
+            color: #FFFFFF;
+        }
+
+        /* Main Content Wrapper */
+        .main-wrapper {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        /* Sticky Top Header */
+        header {
+            height: 70px;
+            background-color: #FFFFFF;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .header-title { font-size: 1.25rem; font-weight: 600; color: #0F172A; }
+        .user-profile-area { display: flex; align-items: center; gap: 15px; }
+        .role-badge {
+            background-color: #DBEAFE;
+            color: #1E40AF;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        /* Content Canvas */
+        .content-canvas { padding: 30px; max-width: 1200px; width: 100%; }
+
+        /* Toolbar & Controls */
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        .status-tabs {
+            display: flex;
+            gap: 8px;
+            background: #E2E8F0;
+            padding: 4px;
+            border-radius: 8px;
+        }
+        .tab {
+            padding: 6px 14px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: #475569;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .tab.active { background: #FFFFFF; color: #0F172A; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+
+        .btn-primary {
+            background-color: #1E3A8A;
+            color: #FFFFFF;
+            padding: 8px 16px;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .btn-primary:hover { background-color: #2563EB; }
+
+        /* Data Table */
+        .table-container {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.9rem; }
+        th { background: #F1F5F9; color: #475569; font-weight: 600; padding: 12px 20px; border-bottom: 1px solid #E2E8F0; }
+        td { padding: 14px 20px; border-bottom: 1px solid #E2E8F0; color: #334155; }
+        tr:last-child td { border-bottom: none; }
+
+        /* Status Badges */
+        .badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-block;
+        }
+        .badge-active { background-color: #D1FAE5; color: #065F46; }
+        .badge-inactive { background-color: #FEE2E2; color: #991B1B; }
+
+        /* Soft-Deleted / Archived Row State */
+        tr.soft-deleted {
+            background-color: #F8FAFC;
+            color: #94A3B8;
+        }
+        tr.soft-deleted td {
+            text-decoration: line-through;
+            color: #94A3B8;
+        }
+        tr.soft-deleted .badge {
+            opacity: 0.6;
+        }
+
+        /* Action Buttons */
+        .action-links { display: flex; gap: 10px; align-items: center; }
+        .action-btn {
+            background: none;
+            border: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .btn-edit { color: #2563EB; }
+        .btn-rights { color: #7C3AED; }
+        .btn-delete { color: #DC2626; }
+        .btn-restore { color: #059669; text-decoration: none; font-weight: 600; }
+        .action-btn:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar -->
+    <aside>
+        <div class="sidebar-brand">Hope, Inc. ERP</div>
+        <ul class="sidebar-nav">
+            <li><a href="dashboard.html">📊 Dashboard</a></li>
+            <li><a href="user-management.html" class="active">👥 User Management</a></li>
+            <li><a href="#">📦 Inventory Module</a></li>
+            <li><a href="#">💰 Finance Module</a></li>
+            <li><a href="#">⚙️ Settings</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Wrapper -->
+    <div class="main-wrapper">
+        <header>
+            <div class="header-title">User Management Workspace</div>
+            <div class="user-profile-area">
+                <span class="role-badge">Superadmin</span>
+                <span style="font-size: 0.9rem; font-weight: 500;">Ashley Marticio</span>
+            </div>
+        </header>
+
+        <div class="content-canvas">
+            <!-- Toolbar -->
+            <div class="toolbar">
+                <div class="status-tabs">
+                    <button class="tab active">All (3)</button>
+                    <button class="tab">Active (2)</button>
+                    <button class="tab">Inactive (1)</button>
+                </div>
+                <button class="btn-primary">+ Add New User</button>
+            </div>
+
+            <!-- Data Table -->
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User Info</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600; color: #0F172A;">Ashley Nicole Marticio</div>
+                                <div style="font-size: 0.8rem; color: #64748B;">ashley.marticio@hope.erp</div>
+                            </td>
+                            <td><span style="font-weight: 500; color: #1E40AF;">Superadmin</span></td>
+                            <td><span class="badge badge-active">Active</span></td>
+                            <td>
+                                <div class="action-links">
+                                    <button class="action-btn btn-edit">Edit</button>
+                                    <button class="action-btn btn-rights" onclick="window.location.href='user-rights-modal.html'">Rights</button>
+                                    <button class="action-btn btn-delete">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>
+                                <div style="font-weight: 600; color: #0F172A;">Aldrich Rodolf Agustin</div>
+                                <div style="font-size: 0.8rem; color: #64748B;">aldrich.agustin@hope.erp</div>
+                            </td>
+                            <td><span style="font-weight: 500; color: #047857;">Admin</span></td>
+                            <td><span class="badge badge-active">Active</span></td>
+                            <td>
+                                <div class="action-links">
+                                    <button class="action-btn btn-edit">Edit</button>
+                                    <button class="action-btn btn-rights" onclick="window.location.href='user-rights-modal.html'">Rights</button>
+                                    <button class="action-btn btn-delete">Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                        <!-- Soft-Deleted Row State -->
+                        <tr class="soft-deleted">
+                            <td>
+                                <div style="font-weight: 600;">Legacy Test Account</div>
+                                <div style="font-size: 0.8rem;">test.user@hope.erp</div>
+                            </td>
+                            <td>User</td>
+                            <td><span class="badge badge-inactive">Inactive</span></td>
+                            <td>
+                                <div class="action-links">
+                                    <button class="action-btn btn-restore">Restore</button>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
