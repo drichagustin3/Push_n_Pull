@@ -13,8 +13,8 @@
 ---
 
 ### 📂 Files Changed
-* **Include the files that you've changed
-* **For example: 'file/file/file'
+* Include the files that you've changed
+* For example: `file/file/file`
 
 ---
 
