@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe - Figure 4: Login</title>
+  <link rel="stylesheet" href="../src/styles/tokens.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #F8FAFC; color: #0F172A; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 24px; }
+
+    .auth-card {
+      background: #FFFFFF;
+      border: 2px solid #CBD5E1;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 440px;
+      padding: 32px;
+    }
+    .brand-header { text-align: center; margin-bottom: 24px; }
+    .logo-box { display: inline-block; background: #1E3A8A; color: #FFFFFF; font-weight: bold; padding: 4px 10px; border-radius: 4px; margin-bottom: 8px; }
+    .brand-header h1 { font-size: 1.5rem; color: #0F172A; }
+    .brand-header p { font-size: 0.9rem; color: #64748B; margin-top: 4px; }
+
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 0.875rem; font-weight: 600; margin-bottom: 6px; color: #1E293B; }
+    input[type="email"], input[type="password"] {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid #CBD5E1;
+      border-radius: 6px;
+      font-size: 0.95rem;
+      background: #F8FAFC;
+    }
+
+    .form-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      font-size: 0.875rem;
+    }
+    .checkbox-label { display: flex; align-items: center; gap: 6px; color: #334155; cursor: pointer; }
+    .forgot-link { color: #1E3A8A; font-weight: 600; text-decoration: none; }
+
+    .btn-primary {
+      width: 100%;
+      padding: 11px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      background-color: #1E3A8A;
+      color: #FFFFFF;
+      border: 2px solid #1E3A8A;
+      cursor: pointer;
+    }
+
+    /* Demo Accounts Box */
+    .demo-box {
+      margin-top: 24px;
+      background-color: #F1F5F9;
+      border: 2px dashed #94A3B8;
+      border-radius: 8px;
+      padding: 14px;
+      font-size: 0.825rem;
+      color: #334155;
+    }
+    .demo-box h3 { font-size: 0.85rem; color: #0F172A; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.03em; }
+    .demo-item { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #E2E8F0; }
+    .demo-item:last-child { border-bottom: none; }
+    .demo-role { font-weight: 700; color: #1E3A8A; }
+
+    .footer-link { text-align: center; margin-top: 20px; font-size: 0.9rem; color: #475569; }
+    .footer-link a { color: #1E3A8A; font-weight: 600; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <div class="auth-card">
+    <div class="brand-header">
+      <div class="logo-box">H</div>
+      <h1>Sign In to Dashboard</h1>
+      <p>Enter your credentials to access Hope, Inc. ERP</p>
+    </div>
+
+    <form>
+      <div class="form-group">
+        <label>Email address</label>
+        <input type="email" placeholder="name@hopeinc.com">
+      </div>
+
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" placeholder="Enter your password">
+      </div>
+
+      <div class="form-controls">
+        <label class="checkbox-label">
+          <input type="checkbox"> Remember me
+        </label>
+        <a href="reset-password.html" class="forgot-link">Forgot password?</a>
+      </div>
+
+      <button type="button" class="btn-primary">Sign In</button>
+    </form>
+
+    <!-- Demo Accounts Informational Callout -->
+    <div class="demo-box">
+      <h3>Demo Accounts (For Evaluation)</h3>
+      <div class="demo-item">
+        <span class="demo-role">Superadmin:</span>
+        <span>superadmin@hopeinc.com / Demo@1234</span>
+      </div>
+      <div class="demo-item">
+        <span class="demo-role">Admin:</span>
+        <span>admin@hopeinc.com / Demo@1234</span>
+      </div>
+      <div class="demo-item">
+        <span class="demo-role">User:</span>
+        <span>user@hopeinc.com / Demo@1234</span>
+      </div>
+    </div>
+
+    <div class="footer-link">
+      Don't have an account? <a href="register.html">Register</a>
+    </div>
+  </div>
+
+</body>
+</html>

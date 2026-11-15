@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe - Figure 2: Public Landing Page</title>
+  <link rel="stylesheet" href="../src/styles/tokens.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: #F8FAFC; color: #0F172A; }
+
+    /* Top Navigation Bar */
+    .navbar {
+      background-color: #FFFFFF;
+      border-bottom: 2px solid #E2E8F0;
+      padding: 16px 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo { font-weight: bold; font-size: 1.25rem; color: #1E3A8A; display: flex; align-items: center; gap: 8px; }
+    .logo-box { background: #1E3A8A; color: white; padding: 4px 10px; border-radius: 4px; }
+    .nav-actions { display: flex; gap: 12px; }
+
+    /* Buttons */
+    .btn { padding: 10px 20px; border-radius: 6px; font-weight: 600; text-decoration: none; font-size: 0.95rem; display: inline-block; cursor: pointer; }
+    .btn-primary { background-color: #1E3A8A; color: #FFFFFF; border: 2px solid #1E3A8A; }
+    .btn-outline { background-color: #FFFFFF; color: #1E3A8A; border: 2px solid #1E3A8A; }
+
+    /* Hero Section */
+    .hero {
+      max-width: 900px;
+      margin: 60px auto 40px;
+      text-align: center;
+      padding: 40px 20px;
+      background: #FFFFFF;
+      border: 2px dashed #CBD5E1;
+      border-radius: 12px;
+    }
+    .hero h1 { font-size: 2.5rem; color: #0F172A; margin-bottom: 16px; }
+    .hero p { font-size: 1.1rem; color: #475569; max-width: 650px; margin: 0 auto 28px; line-height: 1.6; }
+    .hero-buttons { display: flex; justify-content: center; gap: 16px; }
+
+    /* Feature Highlights Grid */
+    .features {
+      max-width: 1000px;
+      margin: 0 auto 60px;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    .card {
+      background: #FFFFFF;
+      border: 2px solid #CBD5E1;
+      border-radius: 8px;
+      padding: 24px;
+    }
+    .card-icon {
+      width: 40px; height: 40px; background: #DBEAFE; color: #1E3A8A;
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-weight: bold; margin-bottom: 16px;
+    }
+    .card h3 { margin-bottom: 8px; font-size: 1.15rem; color: #0F172A; }
+    .card p { font-size: 0.95rem; color: #64748B; line-height: 1.5; }
+  </style>
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">
+      <span class="logo-box">H</span> Hope, Inc. ERP
+    </div>
+    <div class="nav-actions">
+      <a href="login.html" class="btn btn-outline">Sign In to Dashboard</a>
+      <a href="register.html" class="btn btn-primary">Register</a>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <h1>Run your entire business with confidence</h1>
+    <p>
+      Hope, Inc. ERP brings your inventory, sales, human resources, and financial operations together in one unified, easy-to-manage platform.
+    </p>
+    <div class="hero-buttons">
+      <a href="login.html" class="btn btn-primary">Sign In to Dashboard</a>
+      <a href="register.html" class="btn btn-outline">Register</a>
+    </div>
+  </section>
+
+  <!-- Feature Highlights -->
+  <section class="features">
+    <div class="card">
+      <div class="card-icon">01</div>
+      <h3>Inventory Management</h3>
+      <p>Track stock levels, manage suppliers, and monitor warehouse movements in real time.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">02</div>
+      <h3>Sales & Order Processing</h3>
+      <p>Streamline customer quotes, invoicing, and order fulfillment from a single dashboard.</p>
+    </div>
+    <div class="card">
+      <div class="card-icon">03</div>
+      <h3>Finance & Reporting</h3>
+      <p>Gain clear visibility into revenue, expenses, and role-based operational analytics.</p>
+    </div>
+  </section>
+
+</body>
+</html>
