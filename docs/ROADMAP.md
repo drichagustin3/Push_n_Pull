@@ -38,7 +38,7 @@ The project adheres to strict team quotas (30 PRs per sprint × 4 sprints = 120 
 
 ---
 
-## 3. GitHub Project Board Configuration (`AmbatuPull #3`)
+## 3. GitHub Project Board Configuration
 
 The agile board enforces Work In Progress (WIP) constraints to maintain flow and avoid review bottlenecks:
 
