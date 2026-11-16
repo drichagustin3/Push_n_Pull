@@ -1,7 +1,7 @@
 const bcrypt = require('bcrypt');
 const { createHash, timingSafeEqual, randomBytes } = require('node:crypto');
 
-const columns = `user_id, email, role, empno, password_hash, blocked, status,
+const columns = `user_id, email, role, empno, password_hash, blocked, status, is_deleted,
   must_change_password, setup_token_hash, setup_token_expires_at, session_version`;
 // Unknown accounts still incur a bcrypt comparison using a process-local dummy hash.
 let dummyHash;
@@ -14,7 +14,8 @@ const invalid = () => new AuthError(401, 'invalid_credentials', 'Invalid email o
 const unauthenticated = () => new AuthError(401, 'unauthenticated', 'Please sign in again.');
 
 function checkAccount(user) {
-  if (user.blocked || user.status === 'blocked') throw new AuthError(403, 'account_blocked', 'Your account has been blocked. Contact an administrator.');
+  if (user.is_deleted) throw unauthenticated();
+  if (user.blocked) throw new AuthError(403, 'account_blocked', 'Your account has been blocked. Contact an administrator.');
   if (user.status === 'pending') throw new AuthError(403, 'account_pending', 'Your account is awaiting approval.');
   if (user.status !== 'active') throw new AuthError(403, 'account_inactive', 'Your account is not active.');
 }
@@ -41,7 +42,7 @@ async function authenticate(pool, { email, password, setup_token: token }) {
   const matches = password !== undefined
     ? await bcrypt.compare(password, user?.password_hash || await getDummyHash())
     : validSetupToken(user, token);
-  if (!user || !matches || (password !== undefined && !user.password_hash)) throw invalid();
+  if (!user || user.is_deleted || !matches || (password !== undefined && !user.password_hash)) throw invalid();
   checkAccount(user);
   return { user, restricted: needsSetup(user), credential: password !== undefined ? 'password' : 'token' };
 }
@@ -64,8 +65,7 @@ async function setInitialPassword(pool, auth, password) {
     await client.query("SELECT set_config('app.username', $1, true)", [current.email]);
     const updated = await client.query(`UPDATE app_user SET password_hash = $1,
       must_change_password = FALSE, setup_token_hash = NULL, setup_token_expires_at = NULL,
-      session_version = session_version + 1,
-      stamp = 'PASSWORD SET ' || email || ' ' || to_char(CURRENT_TIMESTAMP AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH24:MI:SS')
+      session_version = session_version + 1
       WHERE user_id = $2 RETURNING ${columns}`, [hash, current.user_id]);
     await client.query('COMMIT');
     return updated.rows[0];

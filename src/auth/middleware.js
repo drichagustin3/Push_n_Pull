@@ -8,8 +8,9 @@ function requireSession(pool, config, { allowRestricted = false } = {}) {
       if (config.secure && !req.secure) throw unauthenticated();
       if (!saved?.user || !Number.isFinite(saved.expiresAt) || saved.expiresAt <= Date.now()) throw unauthenticated();
       const user = await findUser(pool, saved.user.user_id);
-      if (!user || user.session_version !== saved.version) throw unauthenticated();
+      if (!user) throw unauthenticated();
       checkAccount(user);
+      if (user.session_version !== saved.version) throw unauthenticated();
       if (!saved.restricted && needsSetup(user)) throw unauthenticated();
       if (saved.restricted && (!needsSetup(user) || (saved.credential === 'token' && (user.setup_token_hash !== saved.setupTokenHash || !(new Date(user.setup_token_expires_at).getTime() > Date.now()))))) throw unauthenticated();
       req.auth = { user, version: saved.version, credential: saved.credential, setupTokenHash: saved.setupTokenHash };

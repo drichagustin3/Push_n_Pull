@@ -16,7 +16,7 @@ before(async () => { hash = await bcrypt.hash(password, 12); });
 
 function account(changes = {}) {
   return { user_id: '1', email: 'ana@example.com', role: 'user', empno: null,
-    password_hash: hash, status: 'active', blocked: false, must_change_password: false,
+    password_hash: hash, status: 'active', blocked: false, is_deleted: false, must_change_password: false,
     setup_token_hash: null, setup_token_expires_at: null, session_version: 0, ...changes };
 }
 
@@ -129,7 +129,7 @@ for (const [state, code] of [[{ blocked: true }, 'account_blocked'], [{ status: 
   });
 }
 
-for (const change of [{ blocked: true }, { status: 'pending' }, { status: 'inactive' }, { session_version: 1 }]) {
+for (const change of [{ blocked: true }, { status: 'pending' }, { status: 'inactive' }, { is_deleted: true }, { session_version: 1 }]) {
   test(`existing session loses access after ${JSON.stringify(change)}`, async (t) => {
     const api = await serve(t);
     const cookie = cookieOf(await api.login());

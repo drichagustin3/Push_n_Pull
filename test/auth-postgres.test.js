@@ -23,7 +23,7 @@ test('real PostgreSQL session persistence, revocation, and concurrent one-time s
     try {
       if (ids.length) {
         await pool.query("DELETE FROM auth_session WHERE sess->'user'->>'user_id' = ANY($1::text[])", [ids]);
-        await pool.query('DELETE FROM app_user WHERE user_id = ANY($1::bigint[])', [ids]);
+        await pool.query('UPDATE app_user SET is_deleted = TRUE WHERE user_id = ANY($1::bigint[])', [ids]);
       }
     } finally { await pool.end(); }
   });
@@ -82,6 +82,26 @@ test('real PostgreSQL session persistence, revocation, and concurrent one-time s
   await pool.query('UPDATE app_user SET blocked = TRUE WHERE user_id = $1', [active.id]);
   assert.equal((await second('/api/v1/auth/session', { cookie })).status, 403);
   assert.equal((await second('/login', { body: { email: active.email, password } })).status, 403);
+  await pool.query('UPDATE app_user SET blocked = FALSE WHERE user_id = $1', [active.id]);
+  assert.equal((await second('/api/v1/auth/session', { cookie })).status, 401);
+  cookie = cookieOf(await second('/login', { body: { email: active.email, password } }));
+  await pool.query('UPDATE app_user SET is_deleted = TRUE WHERE user_id = $1', [active.id]);
+  assert.equal((await second('/api/v1/auth/session', { cookie })).status, 401);
+  assert.equal((await second('/login', { body: { email: active.email, password } })).status, 401);
+
+  const registrationEmail = `register-${randomBytes(12).toString('hex')}@example.test`;
+  response = await second('/api/register', { body: { firstName: 'Registration', lastName: 'Fixture', email: registrationEmail.toUpperCase(), password, confirmPassword: password } });
+  assert.equal(response.status, 201);
+  const registered = (await pool.query('SELECT * FROM app_user WHERE email = $1', [registrationEmail])).rows[0];
+  ids.push(String(registered.user_id));
+  assert.equal(registered.status, 'pending');
+  assert.equal(registered.role, 'user');
+  assert.equal(registered.blocked, false);
+  assert.equal(registered.is_deleted, false);
+  assert.equal(await bcrypt.compare(password, registered.password_hash), true);
+  assert.equal((await second('/login', { body: { email: registrationEmail, password } })).status, 403);
+  assert.equal((await second('/login', { body: { email: registrationEmail, password: 'WrongCredential123!' } })).status, 401);
+  assert.equal((await second('/api/register', { body: { firstName: 'Duplicate', lastName: 'Fixture', email: registrationEmail, password, confirmPassword: password } })).status, 409);
 
   const seeded = await createUser(true);
   const setupLogin = () => second('/login', { body: { email: seeded.email, setup_token: token } });
@@ -97,6 +117,10 @@ test('real PostgreSQL session persistence, revocation, and concurrent one-time s
   assert.equal(row.setup_token_hash, null);
   assert.equal(row.setup_token_expires_at, null);
   assert.equal(row.session_version, 1);
+  const audit = (await pool.query("SELECT action_by, new_values FROM audit_log WHERE table_name='app_user' AND record_key=$1 ORDER BY audit_id DESC LIMIT 1", [seeded.id])).rows[0];
+  assert.equal(audit.action_by, seeded.email);
+  assert.equal(Object.hasOwn(audit.new_values, 'password_hash'), false);
+  assert.equal(Object.hasOwn(audit.new_values, 'setup_token_hash'), false);
   assert.equal((await pool.query("SELECT nullif(current_setting('app.username', true), '') AS actor")).rows[0].actor, null);
   assert.equal((await setupLogin()).status, 401);
   for (const oldCookie of cookies) assert.equal((await second('/api/v1/auth/session', { cookie: oldCookie })).status, 401);

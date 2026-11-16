@@ -3,9 +3,10 @@
 ## Scope and references
 
 Implements issue #6 only: login, logout, PostgreSQL-backed sessions, first-login
-password setup, and pending/blocked account enforcement. Based on registration
-commit 8339765, not yet merged into main. PR base: `feat/S1-DEV-02-register-user`.
-The new branch is `feat/S1-DEV-03-auth-session`.
+password setup, and pending/blocked account enforcement. Original history is preserved from registration
+commit 8339765 through authentication commit 73286c7. Registration is now merged;
+existing PR #8 targets main. The DBA migration remains a separate unmerged task.
+The preserved branch is `feat/S1-DEV-03-auth-session`.
 
 Reviewed Student Guide §2.4/§3.1/§3.8 and the prototype from the
 [shared reference folder](https://drive.google.com/drive/folders/1-O8asPsItaImQ9dUoQc-ZpE4uaalynV9).
@@ -14,24 +15,29 @@ Google OAuth, remember-me, emailed resets, approval endpoints, user CRUD, and
 dashboard/module permissions are outside this task. The `/account` page only
 demonstrates an authenticated session and logout; it is not the future dashboard.
 
-## Expected DB contract — DBA confirmation still required
+## Migration-backed DB contract — separate DBA PR awaits approval
 
-No official migration or SQL file is included in this branch. Startup reads the
-required columns with `LIMIT 0` and never creates schema. Temporary SQL is supplied
-separately for a disposable local database only. Reconcile with S1-DBA-03/05 before
-production merge; the Guide proposes logical fields rather than final SQL.
+The authoritative contract is now S1-DBA-03 migration
+`20261116070000_dba03_rbac_schema.sql` in its independent DBA branch/worktree.
+It has been applied locally to hopedb and tested with this auth rework. No official
+migration is added as a Developer-task change. Startup verifies required columns
+with LIMIT 0 and never creates schema. Temporary CREATE TABLE substitutes are
+obsolete; install the real migration chain. DBA-05 credential provisioning remains
+a separate task.
 
-Retain registration's proposed `app_user` contract: `user_id` bigint identity PK,
+The migration retains registration's `app_user` contract: `user_id` bigint identity PK,
 `first_name`/`last_name` varchar(100), canonical unique `email` varchar(254),
 `password_hash` varchar(60), text `role`, boolean `blocked`, text approval `status`,
-and text `stamp`. Names/email/role/blocked/status/stamp remain not null.
+and text `stamp`. The text role references role(role_code). Names/email/role/blocked/
+status/stamp remain not null. `is_deleted boolean NOT NULL DEFAULT false` is
+independent of pending/active/inactive approval status.
 
 Additional dependencies:
 
 | Column | Expected type / meaning |
 | --- | --- |
 | `password_hash` | Nullable only for an uninitialized account; never plaintext |
-| `empno` | Nullable varchar(5); future employee FK remains DBA-owned |
+| `empno` | Nullable varchar(5), FK to employee(empno) in DBA-03 |
 | `must_change_password` | Boolean NOT NULL DEFAULT false; temporary credentials require true |
 | `setup_token_hash` | Nullable varchar(64), SHA-256 hex digest of a random 32-byte token |
 | `setup_token_expires_at` | Nullable timestamptz; token must be unexpired |
@@ -52,21 +58,23 @@ are periodically pruned; application shutdown closes the pruning timer and pool.
 Do not attach business soft-delete/audit triggers to this technical session table
 without reviewing the session store's required deletion semantics.
 
-Only `status='active' AND blocked=false` can authenticate. Pending users remain
-pending; this branch never approves them. A defensive legacy `status='blocked'`
-check also denies access, but new code must preserve blocked as a separate flag.
-Future block/disable/password/credential-rotation operations must increment
-`session_version` when they must permanently revoke previous sessions, including
-across a later unblock. Every current authenticated request rechecks the row and
+Only non-deleted accounts with `status='active' AND blocked=false` can authenticate.
+Pending users remain pending; this branch never approves them. The obsolete
+legacy status='blocked' assumption has been removed; blocked is a separate flag.
+The migration automatically increments `session_version` for blocked/status/
+soft-delete, role, email, password and setup-credential changes. Unblocking cannot
+resurrect an old session; explicit increments remain available for other revocation
+operations and are not doubled by the trigger. Every current authenticated request rechecks the row and
 destroys its presented session if blocked, pending, missing, expired, or version-stale.
 
 Password setup locks the account row in a transaction, rechecks eligibility,
 stores a cost-12 bcrypt hash, clears the setup flag/token/expiry, increments session
-version, and rotates the session ID. It calls parameterized transaction-local
+version, and rotates the session ID. The DB owns stamps and redacted audit rows;
+the application no longer synthesizes its own password-update stamp. It calls parameterized transaction-local
 `set_config('app.username', verified_email, true)` for compatibility with
-`audit_user()`; the actor does not leak across pooled transactions. Existing audit
-functions remain unchanged. DBA audit triggers must redact password hashes and
-setup-token digests from recorded row payloads.
+`audit_user()`; the actor does not leak across pooled transactions. The migration preserves an existing audit_user() and installs baseline-compatible
+audit support where absent. Its audit triggers redact password hashes and setup
+credentials from recorded row payloads.
 
 ## Secure first-login provisioning
 
@@ -104,8 +112,9 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
    Production requires an HTTPS origin and automatically sets Secure cookies.
    The example placeholder is rejected. Database-only `db:check` does not require
    session configuration.
-5. Install the agreed official schema, or the separately supplied temporary local
-   schema. `IF NOT EXISTS` does not repair incompatible existing definitions.
+5. Apply the real DBA-02 and DBA-03 migrations from the separate DBA worktree in
+   order. Use a fresh local DB if an old temporary prototype schema already exists;
+   do not overwrite teammate data. No temporary schema bootstrap is required.
 6. Run `npm run db:check`, `npm start`, and open `/login`.
 
 Cookies are named `session_id`, HttpOnly, SameSite=Strict, Path=/, and Secure when
@@ -149,7 +158,7 @@ be rolled back after a successful commit merely because the session save failed.
 
 `npm test` runs the ordinary suite without a configured DB; its opt-in PostgreSQL
 test is skipped. Run real integration checks only against a disposable database
-containing the supplied contract tables:
+containing the real DBA-02 and DBA-03 migrations:
 
 ```bash
 AUTH_INTEGRATION=1 PGDATABASE=hopedb_auth_test npm test
@@ -157,7 +166,8 @@ AUTH_INTEGRATION=1 PGDATABASE=hopedb_auth_test npm test
 
 Provide PGHOST/PGPORT/PGUSER/PGPASSWORD through your local environment as needed;
 the integration test intentionally does not load `.env`. It inserts random test
-accounts, deletes only its own fixture rows/sessions, and refuses any other DB name.
+accounts, soft-deletes only its own fixture accounts, deletes its technical
+sessions, and refuses any other DB name. Audit history is retained.
 It does not run DDL. Automated browser-handler tests use a DOM harness rather than
 a full browser; visual/keyboard/mobile verification remains manual.
 
@@ -186,39 +196,69 @@ first-login password setup, and pending/blocked account enforcement. Closes #6.
 - Recheck accounts on protected requests; add JSON/origin checks and throttling.
 - Add login/setup/account pages, focused tests, config validation, and setup notes.
 
+### Files Changed
+
+- src/auth/*, src/security/password.js, src/app.js, src/server.js
+- src/registration/validation.js (shared password policy only)
+- public/login.html, public/set-password.html, public/account.html, public/auth.js
+- test/auth*.test.js, test/server.test.js
+- .env.example, .gitignore, package.json/lock, README.md, docs/S1-DEV-03.md
+
 ### Database Dependencies
 
-Depends on S1-DBA-03/05's agreed schema. Retain registration's app_user columns;
+Depends on independent S1-DBA-03 migration 20261116070000_dba03_rbac_schema.sql.
+DBA-05 remains responsible for actual account provisioning. Retain registration's app_user columns;
 add nullable empno varchar(5), must_change_password boolean default false,
 setup_token_hash varchar(64), setup_token_expires_at timestamptz, and
 session_version integer default 0. password_hash varchar(60) must permit NULL for
 uninitialized accounts. API requires_password_reset maps to the setup flag/unset hash.
-Session storage requires auth_session(sid varchar PK, sess json NOT NULL,
+The same DBA migration supplies auth_session(sid varchar PK, sess json NOT NULL,
 expire timestamp(6) NOT NULL) and an expiry index. username context uses verified
 email. Password updates set the real actor transaction-locally for audit_user().
 Full contract, provisioning, and redaction requirements are in docs/S1-DEV-03.md.
-No official migrations, seed credentials, or local-only SQL are committed; no
-schema is created at runtime. DBA reconciliation remains required before merge.
+No DBA migration files or seed credentials are added as Developer-task changes;
+no schema is created at runtime. Add is_deleted to auth reads, reject soft-deleted
+accounts, and use DB-owned stamps/session revocation. DBA merge approval remains
+required before integrating updated main into this preserved branch.
 
 ### Testing Notes
 
-PASS: clean npm ci (audit reported zero vulnerabilities), all 68 tests with
+PASS: clean npm ci (audit reported zero vulnerabilities), all 69 tests with
 AUTH_INTEGRATION=1, including real PostgreSQL persistence/concurrency and successful
 server startup/shutdown. PASS: whitespace/scope checks and secret/ignore review.
 Automated unit/HTTP/browser-handler tests and real PostgreSQL integration tests
 cover credentials, account guards, restricted setup, expiry/replay, concurrent
 setup, persistence across app instances, logout revocation, cookie options,
 transactions, failure handling, and registration regression. The live test uses
-an isolated PostgreSQL 16 database and temporary contract, not the unmerged official
-migration. Visual browser checks and integration with official DBA migrations
-remain pending.
+an isolated PostgreSQL 16 database with the real migration (not temporary DDL).
+Registration success, pending login rejection, duplicate conflicts, soft deletion,
+block/unblock revocation, and audit actor/redaction checks passed. Visual browser
+verification and hosted deployment remain pending.
 
 ### Scope Confirmation
 
-Only S1-DEV-03; branch feat/S1-DEV-03-auth-session is stacked on registration
-commit 8339765. Base this PR on feat/S1-DEV-02-register-user until dependencies merge.
+Only S1-DEV-03; preserve feat/S1-DEV-03-auth-session and existing PR #8.
+No new DBA migration appears in this task diff. Original commits remain intact.
+Combined tests used a detached worktree at main 5601e38 plus the two task changes;
+no task branches were merged. After the DBA PR is approved and merged, integrate
+updated main into this branch using a reviewed merge that preserves its history.
+
+### Notes & Linked Issues
+
+Closes #6. Reuse existing PR #8; keep DBA issue #19 in its own PR.
 
 ### Related Tasks Deferred
 
 S1-DEV-04 emailed resets, S1-DEV-05 account CRUD, S1-DEV-06 approvals/designation,
 S1-DEV-07 rights management, S1-DEV-08 dashboard RBAC, and all later modules.
+
+
+## Preservation / approval checkpoint
+
+Initial Developer status was clean at 73286c7. DBA work lives separately at
+/workspaces/hope-dba-03 on feat/S1-DBA-03-rbac-schema-migration, created from
+origin/main 5601e38. Combined testing lives at /workspaces/hope-auth-integration
+in a detached worktree built by applying isolated patches, without Git merges.
+This Developer rework is prepared locally; the required post-DBA-merge main
+integration is intentionally pending. No remote push, merge or PR update was
+performed. Reuse PR #8; do not open another Developer PR.
