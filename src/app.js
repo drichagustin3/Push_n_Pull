@@ -17,6 +17,8 @@ function createApp({ pool } = {}) {
   app.get('/register.js', (req, res) => res.sendFile(path.resolve(__dirname, '../public/register.js')));
   app.get('/register.css', (req, res) => res.sendFile(path.resolve(__dirname, '../public/register.css')));
 
+  app.use(express.static(path.resolve(__dirname, '../public')));
+
   // Add future task routes above these terminal handlers.
   app.use((req, res) => {
     res.status(404).json({ error: 'Route not found.' });
