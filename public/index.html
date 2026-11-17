@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HOPE, Inc. ERP — Interactive Sprint 1 Prototype</title>
+  <link rel="stylesheet" href="/prototype.css" />
+</head>
+<body>
+  <!-- ==================== VIEW 1: LANDING & LOGIN FLOW ==================== -->
+  <section id="auth-view" class="auth-shell">
+    <header class="landing-header">
+      <div class="brand-lockup">
+        <span class="brand-badge">HOPE</span>
+        <div>
+          <strong>HOPE, Inc. ERP</strong>
+          <small>Enterprise Resource & Operations Suite</small>
+        </div>
+      </div>
+      <nav class="landing-nav">
+        <a href="/register" class="btn btn-ghost">New Account Registration</a>
+        <span class="env-pill">Sprint 1 Demo Build</span>
+      </nav>
+    </header>
+
+    <main class="auth-main">
+      <div class="auth-hero">
+        <span class="eyebrow">Figures 2–5 • Unified Access Portal</span>
+        <h1>Streamlined Inventory, Sales &amp; Role Governance</h1>
+        <p>
+          Log in with an evaluation account below to preview role-differentiated dashboards,
+          KPI summaries, and the 36-rights granular permissions matrix.
+        </p>
+
+        <div class="eval-helper-card">
+          <div class="eval-helper-header">
+            <strong>Quick-Select Evaluation Accounts</strong>
+            <span>1-Click Fill &amp; Demo Switcher</span>
+          </div>
+          <div class="eval-btn-group">
+            <button type="button" class="eval-btn" data-role="Superadmin" data-email="superadmin@hope-erp.com" data-pass="HopeSuper#2026">
+              <span class="role-dot superadmin"></span>
+              <div>
+                <strong>Superadmin</strong>
+                <small>Full Access + 36 Rights</small>
+              </div>
+            </button>
+            <button type="button" class="eval-btn" data-role="Admin" data-email="admin@hope-erp.com" data-pass="HopeAdmin#2026">
+              <span class="role-dot admin"></span>
+              <div>
+                <strong>Admin</strong>
+                <small>User Mgmt &amp; Ops</small>
+              </div>
+            </button>
+            <button type="button" class="eval-btn" data-role="User" data-email="staff@hope-erp.com" data-pass="HopeStaff#2026">
+              <span class="role-dot user"></span>
+              <div>
+                <strong>User (Staff)</strong>
+                <small>Sales &amp; POS View</small>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="login-card">
+        <h2>Sign In to Workspace</h2>
+        <p class="subtext">Enter your corporate credentials to continue.</p>
+
+        <form id="login-form" novalidate>
+          <div class="form-group">
+            <label for="login-email">Corporate Email</label>
+            <input type="email" id="login-email" placeholder="name@hope-erp.com" autocomplete="username" required />
+            <span class="field-feedback" id="email-feedback"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <div class="password-wrap">
+              <input type="password" id="login-password" placeholder="••••••••••••" autocomplete="current-password" required />
+              <button type="button" id="toggle-password" class="toggle-pass-btn" aria-label="Show password">Show</button>
+            </div>
+            <span class="field-feedback" id="password-feedback"></span>
+          </div>
+
+          <div class="form-row-between">
+            <label class="checkbox-label">
+              <input type="checkbox" id="remember-me" checked />
+              <span>Remember Me</span>
+            </label>
+            <button type="button" id="forgot-pass-trigger" class="link-btn">Forgot Password?</button>
+          </div>
+
+          <div id="login-alert" class="alert-banner hidden" role="alert"></div>
+
+          <button type="submit" class="btn btn-primary btn-block">Sign In to HOPE ERP</button>
+        </form>
+      </div>
+    </main>
+  </section>
+
+  <!-- ==================== VIEW 2: AUTHENTICATED ERP WORKSPACE ==================== -->
+  <section id="app-shell" class="app-shell hidden">
+    <!-- Fixed Left Sidebar (#0F172A) -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <span class="brand-badge">HOPE</span>
+        <div>
+          <strong>HOPE, Inc. ERP</strong>
+          <small id="sidebar-role-label">Superadmin Workspace</small>
+        </div>
+      </div>
+
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Populated dynamically by role -->
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="role-switcher-box">
+          <label for="live-role-switch">Demo Role Switcher</label>
+          <select id="live-role-switch">
+            <option value="Superadmin">Superadmin</option>
+            <option value="Admin">Admin</option>
+            <option value="User">User (Staff)</option>
+          </select>
+        </div>
+        <button type="button" id="logout-btn" class="btn btn-outline-light btn-block">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="workspace-main">
+      <header class="topbar">
+        <div>
+          <h1 id="page-title">Executive Dashboard</h1>
+          <p id="page-subtitle">Real-time operational metrics &amp; quick workflow actions</p>
+        </div>
+        <div class="topbar-user">
+          <span id="active-role-pill" class="role-pill superadmin">Superadmin</span>
+          <div class="user-meta">
+            <strong id="active-user-name">Ashley Nicole Marticio</strong>
+            <small id="active-user-email">superadmin@hope-erp.com</small>
+          </div>
+        </div>
+      </header>
+
+      <!-- SUB-PAGE A: ROLE-DIFFERENTIATED DASHBOARD (Figures 6-8) -->
+      <div id="dashboard-view" class="content-container">
+        <div id="role-notice-banner" class="info-banner"></div>
+
+        <!-- 4 KPI Summary Cards -->
+        <div class="kpi-grid">
+          <article class="kpi-card">
+            <span class="kpi-label">Total Customers</span>
+            <strong class="kpi-value" id="kpi-customers">1,428</strong>
+            <span class="kpi-trend positive">+12.4% vs last month</span>
+          </article>
+          <article class="kpi-card">
+            <span class="kpi-label">Active Products</span>
+            <strong class="kpi-value" id="kpi-products">3,890</strong>
+            <span class="kpi-trend neutral">42 low-stock alerts</span>
+          </article>
+          <article class="kpi-card">
+            <span class="kpi-label">Total Sales Orders</span>
+            <strong class="kpi-value" id="kpi-sales">964</strong>
+            <span class="kpi-trend positive">+8.1% this week</span>
+          </article>
+          <article class="kpi-card">
+            <span class="kpi-label">Gross Revenue</span>
+            <strong class="kpi-value" id="kpi-revenue">₱4,820,500</strong>
+            <span class="kpi-trend positive">+15.3% target beat</span>
+          </article>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2>Quick Workflow Actions</h2>
+              <p>Role-scoped shortcuts aligned with Student Guide Figures 6–8</p>
+            </div>
+          </div>
+          <div class="quick-actions-grid" id="quick-actions-grid"></div>
+        </div>
+
+        <!-- Recent Activity Table -->
+        <div class="panel-card">
+          <div class="panel-header">
+            <h2>Recent System Activity</h2>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Timestamp</th>
+                <th>Actor</th>
+                <th>Module</th>
+                <th>Action Summary</th>
+              </tr>
+            </thead>
+            <tbody id="activity-log-body">
+              <tr>
+                <td>2026-11-16 16:45</td>
+                <td>superadmin@hope-erp.com</td>
+                <td>User Management</td>
+                <td>Updated granular rights matrix for Inventory Lead</td>
+              </tr>
+              <tr>
+                <td>2026-11-16 15:20</td>
+                <td>admin@hope-erp.com</td>
+                <td>Sales &amp; POS</td>
+                <td>Approved bulk invoice #INV-2026-0891</td>
+              </tr>
+              <tr>
+                <td>2026-11-16 14:05</td>
+                <td>staff@hope-erp.com</td>
+                <td>Customers</td>
+                <td>Registered corporate client: Metro Builders Supply</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUB-PAGE B: USER MANAGEMENT & 36-RIGHTS UI (Figures 35-40) -->
+      <div id="users-view" class="content-container hidden">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2>User Directory &amp; Access Governance</h2>
+              <p>Manage active/blocked accounts and configure 36 granular module permissions</p>
+            </div>
+            <div class="panel-actions">
+              <input type="search" id="user-search" class="search-input" placeholder="Search name or email..." />
+              <span id="privilege-indicator" class="privilege-tag">Full Edit Privileges</span>
+            </div>
+          </div>
+
+          <div id="toast-banner" class="toast-banner hidden"></div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Assigned Rights</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="user-directory-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODAL: 36-RIGHTS GRANULAR PERMISSIONS ==================== -->
+  <div id="rights-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h3 id="modal-title">Configure User Rights (36 Permissions)</h3>
+          <p id="modal-subtitle">Target User: —</p>
+        </div>
+        <button type="button" id="close-modal-x" class="close-btn" aria-label="Close modal">&times;</button>
+      </div>
+
+      <div class="modal-toolbar">
+        <div class="rights-counter">
+          Selected Rights: <strong id="selected-rights-count">0</strong> / <strong>36</strong>
+        </div>
+        <div class="bulk-toggles">
+          <button type="button" id="select-all-rights" class="btn btn-sm btn-primary">All (36)</button>
+          <button type="button" id="select-none-rights" class="btn btn-sm btn-secondary">None (0)</button>
+        </div>
+      </div>
+
+      <div class="modal-body" id="rights-modules-container"></div>
+
+      <div class="modal-footer">
+        <button type="button" id="cancel-rights-btn" class="btn btn-secondary">Cancel</button>
+        <button type="button" id="save-rights-btn" class="btn btn-primary">Save Permissions</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/prototype.js"></script>
+</body>
+</html>

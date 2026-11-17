@@ -11,7 +11,7 @@ function createApp({ pool, authConfig, sessionStore } = {}) {
   app.use(express.json({ limit: '100kb' }));
 
   // Liveness only: database connectivity is checked separately during startup.
-  app.get('/health', (req, res) => {
+  app.get(['/health', '/api/health'], (req, res) => {
     res.json({ status: 'ok' });
   });
 
@@ -26,6 +26,8 @@ function createApp({ pool, authConfig, sessionStore } = {}) {
     app.locals.closeAuthStore = () => sessions.store.close?.();
     app.use(authRouter(pool, authConfig, sessions.middleware));
   }
+
+  app.use(express.static(path.resolve(__dirname, '../public')));
 
   // Add future task routes above these terminal handlers.
   app.use((req, res) => {

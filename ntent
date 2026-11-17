@@ -1,0 +1,88 @@
+supabase/migrations/20261114121000_dba02_base_tables.sql:17: trailing whitespace.
+[32m+[m[32m-- Create customer table[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:18: trailing whitespace.
+[32m+[m[32mCREATE TABLE employee (empno VARCHAR(5) NOT NULL PRIMARY KEY,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:19: trailing whitespace.
+[32m+[m												[32mlastname VARCHAR(15),[m[41m  [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:20: trailing whitespace.
+[32m+[m												[32mfirstname VARCHAR(15),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:21: trailing whitespace.
+[32m+[m												[32mgender CHAR(1) CONSTRAINT gender_ck CHECK (gender in ('M','F')),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:22: trailing whitespace.
+[32m+[m												[32mbirthdate DATE,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:23: trailing whitespace.
+[32m+[m												[32mhiredate DATE,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:62: trailing whitespace.
+[32m+[m												[32m  deptName VARCHAR (20),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:71: trailing whitespace.
+[32m+[m															[32m  ('PAY', 'Payroll'),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:75: trailing whitespace.
+[32m+[m[32m-- Create JOB[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:76: trailing whitespace.
+[32m+[m[32mCREATE TABLE job (jobCode VARCHAR(4) NOT NULL PRIMARY KEY,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:79: trailing whitespace.
+[32m+[m[32m-- Insert rows JOB[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:98: trailing whitespace.
+[32m+[m												[32m  jobCode VARCHAR(4) NOT NULL REFERENCES job,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:99: trailing whitespace.
+[32m+[m												[32m  effDate DATE NOT NULL ,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:100: trailing whitespace.
+[32m+[m												[32m  salary DECIMAL(10,2) CONSTRAINT salary_ck[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:102: trailing whitespace.
+[32m+[m												[32m  PRIMARY KEY (empNo, jobCode,effDate),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:163: trailing whitespace.
+[32m+[m[32mCREATE TABLE customer (custno VARCHAR(5) NOT NULL PRIMARY KEY,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:164: trailing whitespace.
+[32m+[m											[32m   custname VARCHAR(20),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:165: trailing whitespace.
+[32m+[m											[32m   address VARCHAR(50),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:166: trailing whitespace.
+[32m+[m											[32m   payterm VARCHAR(3) CONSTRAINT pay_ck[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:255: trailing whitespace.
+[32m+[m[32mCREATE TABLE  sales (transNo VARCHAR(8) NOT NULL PRIMARY KEY,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:256: trailing whitespace.
+[32m+[m												[32msalesDate DATE,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:257: trailing whitespace.
+[32m+[m												[32mcustNo VARCHAR(5),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:258: trailing whitespace.
+[32m+[m												[32mempNo VARCHAR(5),[m[41m 	[m
+supabase/migrations/20261114121000_dba02_base_tables.sql:259: trailing whitespace.
+[32m+[m												[32mFOREIGN KEY (custNo) REFERENCES customer,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:389: trailing whitespace.
+[32m+[m[32mCREATE TABLE product (prodCode VARCHAR(6) NOT NULL PRIMARY KEY,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:390: trailing whitespace.
+[32m+[m											[32mdescription VARCHAR(30),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:391: trailing whitespace.
+[32m+[m											[32munit VARCHAR(3) CONSTRAINT unit_ck[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:451: trailing whitespace.
+[32m+[m[41m											[m
+supabase/migrations/20261114121000_dba02_base_tables.sql:454: trailing whitespace.
+[32m+[m[32mCREATE TABLE salesDetail (transNo VARCHAR(8) NOT NULL REFERENCES sales,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:455: trailing whitespace.
+[32m+[m													[32mprodCode VARCHAR(6) NOT NULL REFERENCES product,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:456: trailing whitespace.
+[32m+[m													[32mquantity DECIMAL(10,2) CONSTRAINT quantity_ck[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:457: trailing whitespace.
+[32m+[m													[32mCHECK (quantity >= 0.0),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:459: trailing whitespace.
+[32m+[m[41m													[m
+supabase/migrations/20261114121000_dba02_base_tables.sql:460: trailing whitespace.
+[32m+[m[32m-- Insert salesDETAIL rows[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:777: trailing whitespace.
+[32m+[m[32mCREATE TABLE payment (orNo VARCHAR(8) NOT NULL PRIMARY KEY,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:778: trailing whitespace.
+[32m+[m											[32m  payDate DATE,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:779: trailing whitespace.
+[32m+[m											[32m  amount DECIMAL(10,2),[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:782: trailing whitespace.
+[32m+[m[32m-- Insert PAYMENT rows[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:951: trailing whitespace.
+[32m+[m[32mCREATE TABLE priceHist (effDate DATE NOT NULL,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:952: trailing whitespace.
+[32m+[m											[32m   prodCode VARCHAR(6) NOT NULL REFERENCES product,[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:953: trailing whitespace.
+[32m+[m											[32m   unitPrice DECIMAL(10,2) CONSTRAINT unitP_ck[m[41m [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:954: trailing whitespace.
+[32m+[m											[32m   CHECK (unitPrice > 0),[m[41m  [m
+supabase/migrations/20261114121000_dba02_base_tables.sql:957: trailing whitespace.
+[32m+[m[32m--  Insert PRICEHIST rows[m[41m [m

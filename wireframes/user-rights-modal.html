@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Rights & Permissions - Hope, Inc. ERP</title>
+    <link rel="stylesheet" href="../css/tokens.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { display: flex; height: 100vh; background-color: #F8FAFC; color: #1E293B; overflow: hidden; }
+
+        /* Sidebar & Layout Dimmed Mock Background */
+        aside {
+            width: 260px;
+            background-color: #0F172A;
+            color: #94A3B8;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid #1E293B;
+        }
+        .sidebar-brand { padding: 20px; font-size: 1.1rem; font-weight: bold; color: #FFFFFF; background-color: #1E293B; border-bottom: 1px solid #334155; }
+        .sidebar-nav { list-style: none; padding: 15px 10px; display: flex; flex-direction: column; gap: 5px; flex-grow: 1; }
+        .sidebar-nav a { color: #94A3B8; text-decoration: none; padding: 10px 15px; border-radius: 6px; font-size: 0.95rem; display: block; }
+        
+        .main-wrapper { flex-grow: 1; display: flex; flex-direction: column; background: #E2E8F0; filter: blur(1px); pointer-events: none; }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(15, 23, 42, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            pointer-events: auto;
+        }
+
+        /* Modal Box */
+        .modal-card {
+            background: #FFFFFF;
+            width: 100%;
+            max-width: 750px;
+            border-radius: 12px;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            display: flex;
+            flex-direction: column;
+            max-height: 90vh;
+            overflow: hidden;
+            animation: modalPop 0.2s ease-out;
+        }
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        /* Modal Header */
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #E2E8F0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #F8FAFC;
+        }
+        .modal-title h2 { font-size: 1.15rem; color: #0F172A; font-weight: 600; }
+        .modal-title p { font-size: 0.85rem; color: #64748B; margin-top: 2px; }
+        .close-btn {
+            background: none; border: none; font-size: 1.25rem; color: #64748B; cursor: pointer;
+            width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px;
+        }
+        .close-btn:hover { background: #E2E8F0; color: #0F172A; }
+
+        /* Scrollable Permission Body */
+        .modal-body {
+            padding: 24px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .permission-section {
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 16px;
+            background: #FAFAFA;
+        }
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #E2E8F0;
+        }
+        .section-header h3 { font-size: 0.95rem; color: #1E3A8A; font-weight: 600; }
+        .select-all-label { font-size: 0.8rem; color: #64748B; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+
+        /* Checkbox Grid (Granular Matrices) */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #334155;
+            cursor: pointer;
+        }
+        .checkbox-item input { width: 16px; height: 16px; accent-color: #1E3A8A; cursor: pointer; }
+
+        /* Sticky Footer */
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid #E2E8F0;
+            background: #F8FAFC;
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        .btn {
+            padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 500; cursor: pointer; border: none;
+        }
+        .btn-secondary { background: #FFFFFF; color: #475569; border: 1px solid #CBD5E1; }
+        .btn-secondary:hover { background: #F1F5F9; }
+        .btn-primary { background: #1E3A8A; color: #FFFFFF; }
+        .btn-primary:hover { background: #2563EB; }
+    </style>
+</head>
+<body>
+
+    <!-- Mock Background Layout -->
+    <aside>
+        <div class="sidebar-brand">Hope, Inc. ERP</div>
+        <ul class="sidebar-nav">
+            <li><a>📊 Dashboard</a></li>
+            <li><a>👥 User Management</a></li>
+        </ul>
+    </aside>
+    <div class="main-wrapper"></div>
+
+    <!-- Active Modal Dialog Overlay -->
+    <div class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title">
+                    <h2>Edit User Rights & Permissions</h2>
+                    <p>Configuring access matrix for: <strong>Aldrich Rodolf Agustin (Admin)</strong></p>
+                </div>
+                <button class="close-btn" onclick="window.location.href='user-management.html'">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Module 1: User Management (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>User Management Module</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Users</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Create User</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Edit User</label>
+                        <label class="checkbox-item"><input type="checkbox"> Delete User</label>
+                    </div>
+                </div>
+
+                <!-- Module 2: Inventory Control (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>Inventory Module</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Inventory</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Add Stock</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Adjust Stock</label>
+                        <label class="checkbox-item"><input type="checkbox"> Audit Logs</label>
+                    </div>
+                </div>
+
+                <!-- Module 3: Financial Ledger (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>Finance & Ledger Module</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Finances</label>
+                        <label class="checkbox-item"><input type="checkbox"> Create Invoice</label>
+                        <label class="checkbox-item"><input type="checkbox"> Edit Ledger</label>
+                        <label class="checkbox-item"><input type="checkbox"> Authorize Payouts</label>
+                    </div>
+                </div>
+
+                <!-- Module 4: Supplier Relations (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>Supplier Relations (SCM)</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Suppliers</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Add Supplier</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Edit Contracts</label>
+                        <label class="checkbox-item"><input type="checkbox"> Terminate SCM</label>
+                    </div>
+                </div>
+
+                <!-- Module 5: Analytics & Reports (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>Analytics & Reports</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Reports</label>
+                        <label class="checkbox-item"><input type="checkbox" checked> Export CSV</label>
+                        <label class="checkbox-item"><input type="checkbox"> Generate Custom</label>
+                        <label class="checkbox-item"><input type="checkbox"> Delete Reports</label>
+                    </div>
+                </div>
+
+                <!-- Module 6: System Settings (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>System Settings & Tokens</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Settings</label>
+                        <label class="checkbox-item"><input type="checkbox"> Modify Tokens</label>
+                        <label class="checkbox-item"><input type="checkbox"> Manage Security</label>
+                        <label class="checkbox-item"><input type="checkbox"> Factory Reset</label>
+                    </div>
+                </div>
+
+                <!-- Module 7: Audit & Compliance (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>Audit & Compliance Logs</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Audit Trail</label>
+                        <label class="checkbox-item"><input type="checkbox"> Export Logs</label>
+                        <label class="checkbox-item"><input type="checkbox"> Archive Logs</label>
+                        <label class="checkbox-item"><input type="checkbox"> Purge History</label>
+                    </div>
+                </div>
+
+                <!-- Module 8: Role-Based Access Control (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>RBAC & Access Control</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Roles</label>
+                        <label class="checkbox-item"><input type="checkbox"> Assign Roles</label>
+                        <label class="checkbox-item"><input type="checkbox"> Create Custom Role</label>
+                        <label class="checkbox-item"><input type="checkbox"> Delete Roles</label>
+                    </div>
+                </div>
+
+                <!-- Module 9: Notifications & Integrations (4 permissions) -->
+                <div class="permission-section">
+                    <div class="section-header">
+                        <h3>Notifications & Webhooks</h3>
+                        <label class="select-all-label"><input type="checkbox"> Select All Module Rights</label>
+                    </div>
+                    <div class="checkbox-grid">
+                        <label class="checkbox-item"><input type="checkbox" checked> View Webhooks</label>
+                        <label class="checkbox-item"><input type="checkbox"> Test Endpoint</label>
+                        <label class="checkbox-item"><input type="checkbox"> Configure Alerts</label>
+                        <label class="checkbox-item"><input type="checkbox"> Delete Webhook</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="window.location.href='user-management.html'">Cancel</button>
+                <button class="btn btn-primary" onclick="window.location.href='user-management.html'">Save Rights</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>

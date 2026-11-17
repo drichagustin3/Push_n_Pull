@@ -1,14 +1,57 @@
 # Push_n_Pull | SoftEngProj | HOPE Inc.
 
+A database-driven Enterprise Resource Planning (ERP) system for **Hope, Inc.** It centralizes customers, products, employees, and sales with strict role-based access control (RBAC) and Row Level Security (RLS).
+
+---
+
+## 1. About the Project
+
+An **ERP (Enterprise Resource Planning)** system replaces separate spreadsheets per department with one shared, centralized database. Every screen in the application is a dynamic view of rows from that database, and what a user sees or can modify depends strictly on their assigned role and permissions.
+
+---
+
+## 2. System Modules
+
+| Module | What It Manages | Main Tables |
+| :--- | :--- | :--- |
+| **Customers** | Who we sell to (name, address, payment terms) | `customer` |
+| **Products** | Product catalogue and historical pricing | `product`, `pricehist` |
+| **Human Resources** | Employees, jobs, departments, and job/salary history | `employee`, `job`, `department`, `jobhistory` |
+| **Sales** | Sale headers, line item details, and payments | `sales`, `salesdetail`, `payment` |
+| **Reports** | 7 read-only operational reports (Print / Save as PDF) | *Reads all of the above* |
+| **User Management** | User accounts, blocking, and per-action rights | `app_user`, `role`, `module`, `rights`, `user_permission`, `password_reset_token` |
+
+---
+
+## 3. User Roles & Access Control
+
+| Role | Capabilities & Restrictions |
+| :--- | :--- |
+| **Superadmin** | Full system access, including approving new users, designating Admins, and assigning any role. |
+| **Admin** | Manages standard Users and their per-action rights; cannot view or modify Superadmin accounts. |
+| **User** | Access is restricted strictly to the specific modules and actions granted by an Admin (up to 36 per-action rights). |
+
+> [!NOTE]
+> **Account Registration & Seeding:** New user registrations always default to the **User** role with a `Pending` status until approved. During development, team members are seeded as **Superadmin**.
+
+---
+
+## 4. Key Design Rules
+
+* **Soft Delete:** Deleting a record sets `status = 'Inactive'` rather than permanently removing it, allowing rows to be restored later. Standard Users only see `Active` rows, while Admins can view all records.
+* **Audit Stamp:** Every database row automatically records the latest action performed, who executed it, and when it occurred.
+* **No Stored Derived Data:** Calculated values—such as invoice totals and current item prices—are computed dynamically from `salesdetail` and `pricehist` rather than stored statically.
+* **Server-Side Security & RLS:** Hiding UI buttons is not sufficient. The backend server validates user rights on every incoming request, backed by **Row Level Security (RLS)** enabled across all database tables.
+
 ### 👥 Group 6 — 3 BSCS 1
 
 | Team Member | Role |
 | :--- | :--- |
 | **Aldrich Rodolf Agustin** | 🥇 `Scrum Master` |
-| **_** | 🎨 `UI/UX Developer` |
+| **Ashley Nicole Marticio** | 🎨 `UI/UX Developer` |
 | **_** | ⚙️ `Backend Developer` |
-| 🗄️ `DB Admin` |
-| 🔍 `Tester` |
+| `Shared Role` | 🗄️ `DB Admin` |
+| `Shared Role` | 🔍 `Tester` |
 
 ## Backend setup (S1-DEV-01)
 
@@ -43,7 +86,8 @@ npm run dev  # restart on source changes
 npm test
 ```
 
-`GET /health` is a liveness endpoint. It does not query the database on each
+`GET /health` and its alias `GET /api/health` return `{"status":"ok"}` as liveness
+endpoints. The shared handler does not query the database on each
 request. Registration is available at `/register`; see the
 [S1-DEV-02 integration notes](docs/S1-DEV-02.md). Unimplemented routes return JSON 404 responses.
 
