@@ -70,6 +70,11 @@ test('real PostgreSQL session persistence, revocation, and concurrent one-time s
   const cookieOf = (response) => response.headers.getSetCookie()[0]?.split(';')[0];
   const active = await createUser(false, { role: 'admin', empno: '00001' });
   const first = await serve();
+  const health = await first('/api/health');
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { status: 'ok' });
+  assert.equal((await first('/account.html')).status, 404);
+  assert.equal((await first('/set-password.html')).status, 404);
   let response = await first('/api/v1/auth/login', { body: { email: active.email, password } });
   assert.equal(response.status, 200);
   let cookie = cookieOf(response);
@@ -215,6 +220,7 @@ test('real PostgreSQL session persistence, revocation, and concurrent one-time s
   const running = await startServer({ config: { port: 0, auth: config }, pool: startupPool });
   try {
     assert.equal((await fetch(`http://127.0.0.1:${running.server.address().port}/health`)).status, 200);
+    assert.equal((await fetch(`http://127.0.0.1:${running.server.address().port}/api/health`)).status, 200);
   } finally { await running.shutdown(); }
   assert.equal(startupPool.ended, true);
 });

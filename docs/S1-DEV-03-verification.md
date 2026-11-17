@@ -4,32 +4,35 @@
 
 Existing branch: `feat/S1-DEV-03-auth-session`. Existing PR: #8, targeting main.
 History 73286c7 and 1ff3272 is preserved; no new auth branch or history reset.
-At this run, fetched origin/main was 5601e38; DBA PR #39 and #40 were OPEN with no
-merge commits. Consequently neither migration was merged into the Developer branch.
+At this run, fetched origin/main was 8b4cf13. DBA PRs #39/#40 and health fix #41
+are confirmed merged. The existing auth branch at 03d3012 was reused and main was
+merged locally in cc62426, preserving all previous auth work. No history reset or
+new auth branch was needed. No GitHub PR merge was performed.
 
-A detached worktree at `/workspaces/hope-auth-final-integration` combines current
-main, the preserved Developer changes and copies of the actual migration files
-from the two DBA remote branches. Those SQL files are not in the Developer diff.
-Local PostgreSQL 16 database `hopedb` was built from the complete real migration
-chain: setup verification, DBA-02, DBA-03 (b150ca9), DBA-04 (0dba192). No temporary
-CREATE TABLE contract replaces the migrations. Actual columns/types/constraints,
-role/module/right relationships, audit functions, and session/reset tables were
-inspected. There are still 36 rights across the five modules.
+Tests now run directly on the existing Developer branch after main integration.
+Local PostgreSQL 16 database hopedb contains the full real merged migration chain:
+setup verification, DBA-02, DBA-03 and DBA-04. No temporary CREATE TABLE contract
+replaces the migrations. Actual account columns/FKs/audit/revocation triggers,
+session storage and reset-token structures were inspected. All 36 rights remain.
+The Developer PR diff relative to main contains no migration or schema-file changes.
 
 DBA-03 is required by authentication. DBA-04 supports future emailed resets and is
 not queried by auth runtime code. The compatibility test explicitly checks that
 an emailed-reset token does not authorize first-login setup or consume that token.
-No application changes were needed beyond the existing schema alignment in 1ff3272.
-This round strengthens tests and documents the resulting evidence.
+The existing schema alignment in 1ff3272 remains valid. Main integration introduced
+static serving of public assets, so private auth pages were moved to views/auth.
+The friendly routes still enforce full/restricted sessions; raw .html paths are
+not served. The new regression initially failed (200 instead of 404), then passed
+after this auth-scoped fix. No outstanding test failures remain.
 
 ## Executed command / fixture safety
 
-The clean dependency install and full suite ran in the detached integration worktree:
+The clean dependency install and full suite ran on feat/S1-DEV-03-auth-session:
 
 ```bash
 npm ci
 AUTH_INTEGRATION=1 AUTH_ALLOW_HOPEDB_TEST=1 AUTH_VERIFY_DBA04=1 \
-  PGHOST=/tmp/hope-final-auth-pg.ICg22h PGPORT=55438 PGDATABASE=hopedb PGUSER=codespace \
+  PGHOST=/tmp/hope-main-health-pg.jchctr PGPORT=55439 PGDATABASE=hopedb PGUSER=codespace \
   npm test
 ```
 
@@ -84,7 +87,7 @@ expiry without waiting eight hours; it does not bypass the production guard.
 ## Results and limits
 
 - PASS: clean npm ci; installation audit reported zero vulnerabilities.
-- PASS: 69 tests, 0 failures, 0 skips with the live integration flags above.
+- PASS: 71 tests, 0 failures, 0 skips with the live integration flags above.
 - PASS: reviewed SQL uses placeholders for incoming values; static column lists
   are not caller-controlled. Audit actor is transaction-local and tied to verified user.
 - PASS: tests capture/check generic failures; runtime logging uses fixed messages,
@@ -95,7 +98,8 @@ expiry without waiting eight hours; it does not bypass the production guard.
   use a DOM harness and HTTP tests serve the actual pages/assets.
 - NOT RUN: deployed HTTPS handshake and hosted Supabase validation. Secure-cookie
   behavior is exercised through the explicitly trusted proxy path in automated tests.
-- NOT RUN: post-merge validation on main because both DBA PRs remain unmerged.
+- PASS: post-main-merge verification, /health and /api/health, registration, and
+  actual server-entrypoint startup and graceful shutdown with exit code 0.
 
 The application uses a persistent PG store in production; MemoryStore is confined
 to tests. The process-local rate limiter still requires a shared store if deploying
@@ -107,4 +111,24 @@ provisioning remains DBA-05; this run installs no production seeds or bypasses.
 Use the ready-to-paste PR description in docs/S1-DEV-03.md for existing PR #8.
 The branch, original commits and working implementation are preserved. No remote
 push, PR creation/update or merge was authorized or executed in this run.
-Dependency merging and a subsequent authorized main integration remain pending.
+Dependency merging and local main integration are complete. Publishing any new
+Developer commits or updating PR #8 still requires explicit approval.
+
+## Current six-case acceptance checklist
+
+| Test | Result | Evidence |
+| --- | --- | --- |
+| 1 | PASS | Active login, persistent cookie, protected session check, logout, then old cookie 401 |
+| 2 | PASS | Wrong password and unknown email share the same generic 401 body |
+| 3 | PASS | Actual registration defaults pending; correct-password login returns 403 |
+| 4 | PASS | Blocked login and previously logged-in account denied; unblock cannot revive old session |
+| 5 | PASS | NULL-password Superadmin and temporary-password account forced through setup; bcrypt hash/flag clearance, new-only credentials, rotated sessions |
+| 6 | PASS | Scope/whitespace/ignore checks; no .env, node_modules, AI folders, or DBA changes staged |
+
+Additional post-merge PASS checks: private raw HTML routes are 404, guarded pages
+require sessions, and main's /api/health alias returns the same minimal 200 JSON.
+The actual Node server entrypoint was started with private ephemeral environment
+settings, tested for both health routes and real registration (201/409/400), then
+terminated gracefully. No real credentials were changed; only generated local
+fixtures were used and soft-deleted. Main's labelled UI prototype remains intact;
+/login is the real auth entry point. Dashboard integration remains out of scope.

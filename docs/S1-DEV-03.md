@@ -5,8 +5,9 @@
 Implements issue #6 only: login, logout, PostgreSQL-backed sessions, first-login
 password setup, and pending/blocked account enforcement. Original history is preserved from registration
 commit 8339765 through authentication commit 73286c7. Registration is now merged;
-existing PR #8 targets main. DBA PRs #39 (DBA-03) and #40 (DBA-04) were both OPEN at final local verification;
-neither is assumed to be part of main.
+existing PR #8 targets main. DBA PRs #39/#40 and health-alias PR #41 are now merged.
+Updated main 8b4cf13 was merged locally into the preserved branch without resetting
+or duplicating its existing authentication commits.
 The preserved branch is `feat/S1-DEV-03-auth-session`.
 
 Reviewed Student Guide §2.4/§3.1/§3.8 and the prototype from the
@@ -16,10 +17,10 @@ Google OAuth, remember-me, emailed resets, approval endpoints, user CRUD, and
 dashboard/module permissions are outside this task. The `/account` page only
 demonstrates an authenticated session and logout; it is not the future dashboard.
 
-## Migration-backed DB contract — separate DBA PR awaits approval
+## Migration-backed DB contract — merged dependencies
 
 The authoritative authentication contract is S1-DBA-03 migration
-`20261116070000_dba03_rbac_schema.sql` in its independent DBA branch/worktree.
+`20261116070000_dba03_rbac_schema.sql`, now merged into main alongside DBA-04.
 It has been applied locally to hopedb and tested with this auth rework. No official
 migration is added as a Developer-task change. Startup verifies required columns
 with LIMIT 0 and never creates schema. Temporary CREATE TABLE substitutes are
@@ -119,10 +120,15 @@ node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
    Production requires an HTTPS origin and automatically sets Secure cookies.
    The example placeholder is rejected. Database-only `db:check` does not require
    session configuration.
-5. Apply the real DBA-02 and DBA-03 migrations from the separate DBA worktree in
-   order. Use a fresh local DB if an old temporary prototype schema already exists;
+5. Apply the real merged migration chain from supabase/migrations in order. Use a fresh local DB if an old temporary prototype schema already exists;
    do not overwrite teammate data. No temporary schema bootstrap is required.
 6. Run `npm run db:check`, `npm start`, and open `/login`.
+
+Private account/setup pages live under views/auth, outside the public static root.
+Only guarded GET /account and GET /set-password serve them; direct /account.html
+and /set-password.html requests return 404. The existing root landing page remains
+a labelled UI prototype; use /login for real server authentication. Wiring the
+dashboard and module permissions remains S1-DEV-08.
 
 Cookies are named `session_id`, HttpOnly, SameSite=Strict, Path=/, and Secure when
 the configured origin is HTTPS. Full sessions have an 8-hour absolute lifetime;
@@ -213,7 +219,9 @@ Closes #6.
 - Align auth reads with is_deleted and DB-owned stamps/revocation; retain registration behavior.
 - Expand live acceptance tests for local hopedb, session isolation/fixation, temporary-password
   and null-password setup, database faults, and separation from emailed-reset credentials.
-- Add the full verification report and update setup notes; no runtime rewrite was needed.
+- Keep private HTML outside public static serving after main integration; add
+  regression tests for direct-file requests and both health aliases.
+- Update the full verification report and setup notes; preserve working auth logic.
 
 ### Database Dependencies
 
@@ -227,20 +235,21 @@ req.user is refreshed from PostgreSQL before protected access.
 S1-DBA-04 password_reset_token is present in compatibility tests but is not a
 runtime login/setup dependency. Its tokens are rejected as first-login proof.
 No migration, temporary table bootstrap, reset/email API, or DBA credential seeds
-are included in the Developer task diff. DBA PRs #39/#40 were both open when tested;
-local combined tests use detached main + both real migration files, not a claim
-that these migrations have merged. DBA-05 account provisioning remains separate.
+are included in the Developer task diff. DBA PRs #39/#40 and health fix #41 are
+merged in main 8b4cf13, now incorporated locally into this preserved branch.
+DBA-05 account provisioning remains separate.
 
 ### Testing Notes
 
 PASS: clean npm ci, zero vulnerabilities reported by installation audit, and all
-69 automated tests with real PostgreSQL hopedb integration enabled. PASS: all 16
+71 automated tests with real PostgreSQL hopedb integration enabled. PASS: all 16
 requested acceptance cases (see docs/S1-DEV-03-verification.md), two-user logout
 isolation, session regeneration/expiry/tampering, first-login concurrency/replay,
 registration regression, and DB/store error handling. Database fault coverage uses
 an isolated PostgreSQL pool with an invalid search_path, not a production outage.
-Browser handlers are tested with a DOM harness. NOT RUN: visual browser/production
-TLS deployment checks and post-merge verification against main (DBA PRs unmerged).
+Browser handlers are tested with a DOM harness. Post-main-merge verification and
+real server-entrypoint health/registration/shutdown checks passed. NOT RUN: visual
+browser and deployed production TLS/hosted checks.
 
 ### Security Verification
 
@@ -258,15 +267,15 @@ checks and IP throttling apply to state-changing authentication requests.
 
 Auth/session helpers, guards/controllers/routes, auth pages and browser handler,
 startup/config integration, shared existing password policy, auth-specific tests,
-and docs/S1-DEV-03*.md. The latest verification work changes only the live auth test
-and documentation; production implementation from the preserved commits remains.
+and docs/S1-DEV-03*.md. The latest work adds private-page isolation and post-merge regression tests;
+existing login/logout/password/session behavior is reused.
 
 ### Scope Confirmation
 
 Only S1-DEV-03, on preserved feat/S1-DEV-03-auth-session with original history intact.
-No DBA migration appears as a Developer-task addition. No main merge was performed;
-combine updated main only after dependency merges and authorization. No remote
-push, PR update/creation or merge is performed in this verification task.
+No DBA migration appears as a Developer-task addition. Main 8b4cf13 was merged locally after dependencies merged; the PR diff excludes
+DBA migrations and the health fix already owned by main. No remote push, PR update,
+PR creation or GitHub PR merge is performed without user approval.
 
 ### Deferred Tasks
 
@@ -275,15 +284,11 @@ last-superadmin guard; DEV-07 rights UI; DEV-08 dashboard/module rights; later s
 
 ## Preservation / approval checkpoint
 
-Initial Developer status was clean at 73286c7. DBA work lives separately at
-/workspaces/hope-dba-03 on feat/S1-DBA-03-rbac-schema-migration, created from
-origin/main 5601e38. Combined testing lives at /workspaces/hope-auth-integration
-in a detached worktree built by applying isolated patches, without Git merges.
-This Developer rework is prepared locally; the required post-DBA-merge main
-integration is intentionally pending. No remote push, merge or PR update was
-performed. Reuse PR #8; do not open another Developer PR.
-
-Final verification uses /workspaces/hope-auth-final-integration at main 5601e38,
-with isolated copies of both unmerged DBA migrations. See the verification report
-for current database location and results; earlier temporary cluster paths above
-are historical and are not required to reproduce the tests.
+The workspace was initially on clean main at 8b4cf13, while the existing auth branch
+was preserved at 03d3012. Reused that branch and merged origin/main locally in
+cc62426; original auth commits 73286c7, 1ff3272 and 03d3012 remain ancestors.
+No existing work was reset or recreated. All main-owned migrations/UI/health fixes
+remain unchanged relative to main; the Developer diff contains only auth changes.
+This local main integration is not a GitHub PR merge. Remote publishing and any
+update to existing PR #8 remain approval-gated. See S1-DEV-03-verification.md for
+the current actual database, command and post-merge results.

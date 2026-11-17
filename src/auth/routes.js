@@ -24,8 +24,8 @@ function authRouter(pool, config, sessionMiddleware) {
   // Logout can destroy expired/restricted sessions too; it never grants access.
   router.post(['/api/v1/auth/logout', '/logout'], postGuard, sessionMiddleware, controller.logout);
   router.get('/api/v1/auth/session', sessionMiddleware, full, controller.session);
-  router.get('/set-password', sessionMiddleware, restricted, (req, res) => res.sendFile(path.resolve(__dirname, '../../public/set-password.html')));
-  router.get('/account', sessionMiddleware, full, (req, res) => res.sendFile(path.resolve(__dirname, '../../public/account.html')));
+  router.get('/set-password', sessionMiddleware, restricted, (req, res) => res.sendFile(path.resolve(__dirname, '../../views/auth/set-password.html')));
+  router.get('/account', sessionMiddleware, full, (req, res) => res.sendFile(path.resolve(__dirname, '../../views/auth/account.html')));
   router.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     const expected = error instanceof AuthError;

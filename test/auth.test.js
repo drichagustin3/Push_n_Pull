@@ -319,3 +319,17 @@ test('restricted and already-logged-out sessions can log out safely', async (t) 
   assert.equal((await api.request('/set-password', { cookie, body: setupBody })).status, 401);
   assert.equal((await api.request('/logout', { cookie, body: {} })).status, 200);
 });
+
+test('private auth HTML is not exposed by public static middleware', async (t) => {
+  const api = await serve(t);
+  assert.equal((await api.request('/account.html')).status, 404);
+  assert.equal((await api.request('/set-password.html')).status, 404);
+  assert.equal((await api.request('/account')).status, 401);
+  assert.equal((await api.request('/set-password')).status, 401);
+  const cookie = cookieOf(await api.login());
+  assert.equal((await api.request('/account', { cookie })).status, 200);
+  const restricted = await serve(t, { must_change_password: true });
+  const restrictedCookie = cookieOf(await restricted.login());
+  assert.equal((await restricted.request('/account', { cookie: restrictedCookie })).status, 302);
+  assert.equal((await restricted.request('/set-password', { cookie: restrictedCookie })).status, 200);
+});
