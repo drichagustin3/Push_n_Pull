@@ -12,13 +12,15 @@ async function serve(t) {
   return `http://127.0.0.1:${server.address().port}`;
 }
 
-test('health returns only a minimal liveness response', async (t) => {
-  const base = await serve(t);
-  const response = await fetch(`${base}/health`);
-  assert.equal(response.status, 200);
-  assert.deepEqual(await response.json(), { status: 'ok' });
-  assert.equal(response.headers.get('x-powered-by'), null);
-});
+for (const route of ['/health', '/api/health']) {
+  test(`${route} returns only a minimal liveness response`, async (t) => {
+    const base = await serve(t);
+    const response = await fetch(`${base}${route}`);
+    assert.equal(response.status, 200);
+    assert.deepEqual(await response.json(), { status: 'ok' });
+    assert.equal(response.headers.get('x-powered-by'), null);
+  });
+}
 
 test('unimplemented routes return JSON 404 and no internal details', async (t) => {
   const base = await serve(t);

@@ -86,7 +86,8 @@ npm run dev  # restart on source changes
 npm test
 ```
 
-`GET /health` is a liveness endpoint. It does not query the database on each
+`GET /health` and its alias `GET /api/health` return `{"status":"ok"}` as liveness
+endpoints. The shared handler does not query the database on each
 request. Registration is available at `/register`; see the
 [S1-DEV-02 integration notes](docs/S1-DEV-02.md). Unimplemented routes return JSON 404 responses.
 

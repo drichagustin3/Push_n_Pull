@@ -8,7 +8,7 @@ function createApp({ pool } = {}) {
   app.use(express.json({ limit: '100kb' }));
 
   // Liveness only: database connectivity is checked separately during startup.
-  app.get('/health', (req, res) => {
+  app.get(['/health', '/api/health'], (req, res) => {
     res.json({ status: 'ok' });
   });
 
