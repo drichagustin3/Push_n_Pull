@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi-Fi Component States & Tokens - Hope, Inc. ERP</title>
+    <link rel="stylesheet" href="../css/tokens.css">
+    <style>
+        :root {
+            /* Incremental Spacing Scale (S1-UIX-04 Spec) */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+
+            /* Core Brand & State Palette */
+            --primary-default: #1E3A8A;
+            --primary-hover: #2563EB;
+            --primary-active: #1E40AF;
+            --danger-default: #DC2626;
+            --danger-hover: #B91C1C;
+            --success-default: #059669;
+            --success-hover: #047857;
+            --disabled-bg: #E2E8F0;
+            --disabled-text: #94A3B8;
+            --focus-ring: 0 0 0 3px rgba(37, 99, 235, 0.35);
+            --error-ring: 0 0 0 3px rgba(220, 38, 38, 0.25);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #F8FAFC; color: #1E293B; padding: var(--space-8); }
+
+        .container { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: var(--space-6); }
+
+        .page-header {
+            background: #FFFFFF;
+            padding: var(--space-6);
+            border-radius: 12px;
+            border: 1px solid #E2E8F0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .page-header h1 { font-size: 1.4rem; color: #0F172A; }
+        .page-header p { font-size: 0.9rem; color: #64748B; margin-top: var(--space-1); }
+        .spec-tag {
+            background: #DBEAFE; color: #1E40AF; padding: var(--space-1) var(--space-4);
+            border-radius: 999px; font-size: 0.8rem; font-weight: 600;
+        }
+
+        .card {
+            background: #FFFFFF;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: var(--space-6);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .card h2 {
+            font-size: 1.1rem;
+            color: #0F172A;
+            margin-bottom: var(--space-4);
+            padding-bottom: var(--space-2);
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        /* Button Matrix */
+        .state-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-4);
+            align-items: center;
+        }
+        .state-cell {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            align-items: flex-start;
+        }
+        .state-label { font-size: 0.75rem; font-weight: 600; color: #64748B; text-transform: uppercase; letter-spacing: 0.03em; }
+
+        .btn {
+            padding: var(--space-2) var(--space-4);
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            width: 100%;
+            text-align: center;
+        }
+
+        /* Primary Button States */
+        .btn-primary { background: var(--primary-default); color: #FFFFFF; }
+        .btn-primary:hover, .btn-primary.is-hover { background: var(--primary-hover); }
+        .btn-primary:focus, .btn-primary.is-focus { background: var(--primary-default); box-shadow: var(--focus-ring); outline: none; }
+        .btn-primary:active, .btn-primary.is-active { background: var(--primary-active); transform: translateY(1px); }
+        .btn-primary:disabled, .btn-primary.is-disabled {
+            background: var(--disabled-bg); color: var(--disabled-text); cursor: not-allowed; pointer-events: none;
+        }
+
+        /* Semantic Action Buttons (Block / Unblock / Delete) */
+        .btn-danger { background: var(--danger-default); color: #FFFFFF; }
+        .btn-danger:hover { background: var(--danger-hover); }
+        .btn-success { background: var(--success-default); color: #FFFFFF; }
+        .btn-success:hover { background: var(--success-hover); }
+
+        /* Form Input States */
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: var(--space-4);
+        }
+        .form-group { display: flex; flex-direction: column; gap: var(--space-1); }
+        .form-label { font-size: 0.8rem; font-weight: 600; color: #334155; }
+        .form-input {
+            padding: var(--space-2) var(--space-4);
+            border: 1px solid #CBD5E1;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            color: #0F172A;
+            background: #FFFFFF;
+            transition: all 0.15s ease;
+            width: 100%;
+        }
+        .form-input:hover, .form-input.is-hover { border-color: #94A3B8; }
+        .form-input:focus, .form-input.is-focus { border-color: #2563EB; box-shadow: var(--focus-ring); outline: none; }
+        .form-input:disabled, .form-input.is-disabled {
+            background: #F1F5F9; border-color: #E2E8F0; color: #94A3B8; cursor: not-allowed;
+        }
+        .form-input.is-error { border-color: #DC2626; box-shadow: var(--error-ring); }
+        .error-text { font-size: 0.75rem; color: #DC2626; font-weight: 500; }
+
+        /* Badges & Status Chips */
+        .badge-row { display: flex; gap: var(--space-4); flex-wrap: wrap; align-items: center; }
+        .badge {
+            padding: var(--space-1) var(--space-4);
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .badge-active { background: #D1FAE5; color: #065F46; }
+        .badge-blocked { background: #FEE2E2; color: #991B1B; border: 1px solid #FECACA; }
+        .badge-inactive { background: #F1F5F9; color: #475569; border: 1px solid #CBD5E1; }
+
+        /* Spacing Scale Visualizer */
+        .spacing-list { display: flex; flex-direction: column; gap: var(--space-4); }
+        .spacing-item { display: flex; align-items: center; gap: var(--space-4); }
+        .spacing-meta { width: 160px; font-size: 0.85rem; font-family: monospace; color: #334155; }
+        .spacing-bar { height: 16px; background: #2563EB; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="page-header">
+        <div>
+            <h1>Hope, Inc. ERP — Hi-Fi UI Component States</h1>
+            <p>Task [S1-UIX-04] Interactive States, Semantic Badges & Incremental Spacing Tokens</p>
+        </div>
+        <span class="spec-tag">Handoff Spec v1.0</span>
+    </div>
+
+    <!-- 1. Interactive Button States -->
+    <div class="card">
+        <h2>1. Primary Button States (`.btn-primary`)</h2>
+        <div class="state-grid">
+            <div class="state-cell">
+                <span class="state-label">Default</span>
+                <button class="btn btn-primary">Save Changes</button>
+            </div>
+            <div class="state-cell">
+                <span class="state-label">Hover (`:hover`)</span>
+                <button class="btn btn-primary is-hover">Save Changes</button>
+            </div>
+            <div class="state-cell">
+                <span class="state-label">Focus (`:focus`)</span>
+                <button class="btn btn-primary is-focus">Save Changes</button>
+            </div>
+            <div class="state-cell">
+                <span class="state-label">Active (`:active`)</span>
+                <button class="btn btn-primary is-active">Save Changes</button>
+            </div>
+            <div class="state-cell">
+                <span class="state-label">Disabled (`:disabled`)</span>
+                <button class="btn btn-primary is-disabled" disabled>Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Form Input States -->
+    <div class="card">
+        <h2>2. Form Input States (`.form-input`)</h2>
+        <div class="input-grid">
+            <div class="form-group">
+                <span class="state-label">Default</span>
+                <input type="text" class="form-input" value="ashley@hope.erp">
+            </div>
+            <div class="form-group">
+                <span class="state-label">Hover (`:hover`)</span>
+                <input type="text" class="form-input is-hover" value="ashley@hope.erp">
+            </div>
+            <div class="form-group">
+                <span class="state-label">Focus (`:focus`)</span>
+                <input type="text" class="form-input is-focus" value="ashley@hope.erp">
+            </div>
+            <div class="form-group">
+                <span class="state-label">Disabled (`:disabled`)</span>
+                <input type="text" class="form-input is-disabled" value="Read-only field" disabled>
+            </div>
+            <div class="form-group">
+                <span class="state-label">Error (`.is-error`)</span>
+                <input type="text" class="form-input is-error" value="invalid-email@">
+                <span class="error-text">Please enter a valid work email.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. User Status Badges & Figure 36 Actions -->
+    <div class="card">
+        <h2>3. Status Badges & Figure 36 Account Actions</h2>
+        <div class="badge-row">
+            <span class="badge badge-active">● Active</span>
+            <span class="badge badge-blocked">● Blocked (Figure 36)</span>
+            <span class="badge badge-inactive">● Inactive / Soft-Deleted</span>
+            <span style="color: #CBD5E1;">|</span>
+            <button class="btn btn-danger" style="width: auto;">Block User</button>
+            <button class="btn btn-success" style="width: auto;">Unblock</button>
+        </div>
+    </div>
+
+    <!-- 4. Incremental Spacing Scale -->
+    <div class="card">
+        <h2>4. Incremental Spacing Scale (4px, 8px, 16px, 24px, 32px)</h2>
+        <div class="spacing-list">
+            <div class="spacing-item">
+                <span class="spacing-meta">--space-1 (4px)</span>
+                <div class="spacing-bar" style="width: 4px;"></div>
+            </div>
+            <div class="spacing-item">
+                <span class="spacing-meta">--space-2 (8px)</span>
+                <div class="spacing-bar" style="width: 8px;"></div>
+            </div>
+            <div class="spacing-item">
+                <span class="spacing-meta">--space-4 (16px)</span>
+                <div class="spacing-bar" style="width: 16px;"></div>
+            </div>
+            <div class="spacing-item">
+                <span class="spacing-meta">--space-6 (24px)</span>
+                <div class="spacing-bar" style="width: 24px;"></div>
+            </div>
+            <div class="spacing-item">
+                <span class="spacing-meta">--space-8 (32px)</span>
+                <div class="spacing-bar" style="width: 32px;"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
