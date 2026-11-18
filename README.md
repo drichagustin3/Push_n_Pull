@@ -91,6 +91,11 @@ endpoints. The shared handler does not query the database on each
 request. Registration is available at `/register`; see the
 [S1-DEV-02 integration notes](docs/S1-DEV-02.md). Unimplemented routes return JSON 404 responses.
 
+Authentication is available at `/login`; see the [S1-DEV-03 setup and database
+contract](docs/S1-DEV-03.md). Before starting the server, configure a private
+`SESSION_SECRET` and exact `APP_ORIGIN`, and install the expected auth schema.
+`npm run db:check` verifies connectivity only; server startup also checks auth columns.
+
 ### Configuration
 
 The application loads the repository-root `.env`; existing process environment

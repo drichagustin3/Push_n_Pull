@@ -9,3 +9,5 @@ coverage/
 .claude/
 .cursor/
 .aider*
+.antigravity/
+.gemini/

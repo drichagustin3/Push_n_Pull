@@ -108,6 +108,8 @@ for (const entry of ['src/server.js', 'scripts/check-db.js']) {
     const result = await runEntry(entry, {
       PGHOST: '127.0.0.1', PGPORT: String(port), PGDATABASE: 'hopedb',
       PGUSER: 'test_user', PGPASSWORD: 'sensitive_password',
+      SESSION_SECRET: require('node:crypto').randomBytes(32).toString('hex'),
+      APP_ORIGIN: 'http://localhost:3000',
     });
     assert.equal(result.code, 1);
     assert.equal(result.signal, null);
