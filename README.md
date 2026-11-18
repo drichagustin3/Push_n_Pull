@@ -103,8 +103,12 @@ production; development without SMTP prints private reset links locally.
 
 Authenticated Admins and Superadmins can open `/users` for account management;
 see the [S1-DEV-05 scope, API contract, and testing notes](docs/S1-DEV-05.md).
-Admins manage Users only. Superadmins can create privileged accounts; existing
-account role changes and approvals are deferred to DEV-06.
+Admins manage Users only. Superadmins can create privileged accounts.
+
+Superadmin approval/rejection, role assignment and guarded soft deletion are now
+implemented in [S1-DEV-06](docs/S1-DEV-06.md), including last-active-Superadmin
+protection on both block routes. Rights assignment and dashboard filtering remain
+separate tasks.
 
 ### Configuration
 

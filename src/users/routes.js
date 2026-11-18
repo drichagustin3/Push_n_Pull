@@ -6,11 +6,14 @@ const { requireAuth } = require('../auth/middleware');
 const { AuthError } = require('../auth/service');
 const { usersController } = require('./controller');
 const { UserManagementError } = require('./validation');
+const { requireSuperadmin } = require('./superadmin-middleware');
+const { superadminController } = require('./superadmin-controller');
 
 const template = readFileSync(path.resolve(__dirname, '../../views/users/index.html'), 'utf8');
 function usersRouter(pool, config, sessionMiddleware) {
   const router = Router();
   const controller = usersController(pool);
+  const superadmin = superadminController(pool);
   const authenticate = requireAuth(pool, config);
   const manager = (req, res, next) => ['admin', 'superadmin'].includes(req.user.role)
     ? next() : res.status(403).json({ error: 'User Management requires an administrator.' });
@@ -39,6 +42,10 @@ function usersRouter(pool, config, sessionMiddleware) {
   router.put('/api/users/:id', guard(), limiter, controller.edit);
   router.put('/api/users/:id/block', guard(true), limiter, controller.toggleBlock);
   router.patch('/api/users/:id/blocked', guard(), limiter, controller.block);
+  router.put('/api/users/:id/approve', requireSuperadmin, guard(true), limiter, superadmin.approve);
+  router.put('/api/users/:id/reject', requireSuperadmin, guard(true), limiter, superadmin.reject);
+  router.put('/api/users/:id/role', requireSuperadmin, guard(), limiter, superadmin.role);
+  router.delete('/api/users/:id', requireSuperadmin, guard(true), limiter, superadmin.remove);
   router.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof UserManagementError || error instanceof AuthError) return res.status(error.status).json({ error: error.message });
