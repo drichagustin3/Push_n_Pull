@@ -112,7 +112,14 @@ protection on both block routes.
 The User Management Rights dialog is implemented in
 [S1-DEV-07](docs/S1-DEV-07.md): eligible accounts have a Rights action for the
 36 grouped permissions, with transactional updates and existing trigger auditing.
-Dashboard/sidebar and downstream permission enforcement remain DEV-08 work.
+Future business endpoints must explicitly apply the exact-action middleware described below.
+
+The authenticated main workspace is now available at `/account` or `/workspace`;
+the root URL redirects to the real authenticated entry. See
+[S1-DEV-08](docs/S1-DEV-08.md) for navigation/RBAC contracts, role policy, live
+metrics verification and the outstanding DBA business soft-delete dependency.
+Future module links open protected shells; business CRUD and the audit viewer
+remain assigned to later sprints.
 
 ### Configuration
 
