@@ -4,6 +4,7 @@ const { registrationRouter } = require('./registration/routes');
 const { createSessionMiddleware } = require('./auth/session');
 const { authRouter } = require('./auth/routes');
 const { resetRouter } = require('./password-reset/routes');
+const { usersRouter } = require('./users/routes');
 
 function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions } = {}) {
   const app = express();
@@ -26,6 +27,7 @@ function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions }
     const sessions = createSessionMiddleware(pool, authConfig, sessionStore);
     app.locals.closeAuthStore = () => sessions.store.close?.();
     app.use(authRouter(pool, authConfig, sessions.middleware));
+    app.use(usersRouter(pool, authConfig, sessions.middleware));
   }
 
   if (resetConfig && authConfig) {

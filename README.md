@@ -101,6 +101,11 @@ Password recovery is available at `/forgot-password`; see the
 Server startup also checks the DBA-04 reset-token schema. Configure SMTP for
 production; development without SMTP prints private reset links locally.
 
+Authenticated Admins and Superadmins can open `/users` for account management;
+see the [S1-DEV-05 scope, API contract, and testing notes](docs/S1-DEV-05.md).
+Admins manage Users only. Superadmins can create privileged accounts; existing
+account role changes and approvals are deferred to DEV-06.
+
 ### Configuration
 
 The application loads the repository-root `.env`; existing process environment
