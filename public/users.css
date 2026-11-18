@@ -7,3 +7,7 @@ button { cursor: pointer; border: 1px solid #1e3a8a; border-radius: .3rem; color
 button:disabled { cursor: default; opacity: .6; } :focus-visible { outline: 3px solid #2563eb; outline-offset: 2px; }
 .table-wrap { overflow-x: auto; } table { border-collapse: collapse; width: 100%; } th, td { padding: .75rem; text-align: left; border-bottom: 1px solid #cbd5e1; }
 td button { margin: .2rem; } .deleted { background: #f1f5f9; } .blocked { color: #b91c1c; } fieldset { width: 100%; } #message { min-height: 1.5em; }
+dialog { max-width: min(850px, 90vw); max-height: 85vh; border: 1px solid #cbd5e1; border-radius: .75rem; padding: 1.5rem; color: #1e293b; }
+dialog::backdrop { background: rgb(15 23 42 / 55%); } #rightsModules { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+#rightsModules fieldset { box-sizing: border-box; min-width: 0; } #rightsModules label { flex-direction: row-reverse; justify-content: flex-end; align-items: center; margin: .4rem 0; }
+.rights-toolbar, .rights-footer { display: flex; gap: .75rem; align-items: center; margin: 1rem 0; }
