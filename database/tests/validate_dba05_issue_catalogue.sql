@@ -1,6 +1,6 @@
 -- S1-DBA-05 target contract: exact issue #47 codes and module mappings.
--- Read-only. Expected to fail against the current canonical catalogue.
--- Descriptions retain the existing action labels; issue prose annotations are not identifiers.
+-- Read-only. Passes after the DBA-05 catalogue reconciliation.
+-- Exact issue action labels include the Customer soft-delete annotation.
 \set ON_ERROR_STOP on
 BEGIN READ ONLY;
 DO $verify$
@@ -17,7 +17,7 @@ BEGIN
   WITH expected(right_code,module_code,description) AS (VALUES
     ('customer.add','customer','Add Customer'),
     ('customer.edit','customer','Edit Customer'),
-    ('customer.delete','customer','Delete Customer'),
+    ('customer.delete','customer','Delete Customer (Soft delete)'),
     ('product.add','product','Add Product'),
     ('product.edit','product','Edit Product'),
     ('product.delete','product','Delete Product'),

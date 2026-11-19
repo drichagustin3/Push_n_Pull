@@ -1,3 +1,8 @@
+> Historical initial inspection and planning checkpoint. Its missing-catalogue/migration
+> findings describe the state before reconciliation. See
+> [the PR #55 resolution report](S1-DBA-05-PR55-resolution.md) for current results,
+> implemented SQL and the remaining account-roster blocker.
+
 # S1-DBA-05 — catalogue verification and blocked account provisioning
 
 Issue: [#47](https://github.com/drichagustin3/Push_n_Pull/issues/47).

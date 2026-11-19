@@ -1,5 +1,6 @@
--- S1-DBA-05 preflight: verify the existing merged canonical catalogue only.
--- Read-only. Does not approve issue #47 aliases or seed any account.
+-- S1-DBA-05 historical preflight: verify the merged pre-reconciliation catalogue only.
+-- Read-only. Intentionally reports drift AFTER the issue-code reconciliation; use
+-- validate_dba05_issue_catalogue.sql for post-migration acceptance.
 \set ON_ERROR_STOP on
 BEGIN READ ONLY;
 DO $verify$
@@ -58,6 +59,10 @@ BEGIN
   SELECT string_agg(right_code, ', ' ORDER BY right_code) INTO differences FROM differences;
   IF differences IS NOT NULL THEN RAISE EXCEPTION 'Canonical rights differ at codes: %', differences; END IF;
   SELECT count(*) INTO active_count FROM public.rights_catalogue WHERE NOT is_deleted;
+  IF active_count<>36 OR EXISTS(SELECT 1 FROM public.module WHERE is_deleted)
+    OR EXISTS(SELECT 1 FROM public.role WHERE is_deleted) THEN
+    RAISE EXCEPTION 'Required roles, modules or canonical rights are disabled';
+  END IF;
   RAISE NOTICE 'PASS: exact canonical set, mappings and descriptions verified; % of 36 rights active. No records modified.', active_count;
 END
 $verify$;
