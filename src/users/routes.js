@@ -9,6 +9,7 @@ const { UserManagementError } = require('./validation');
 const { requireSuperadmin } = require('./superadmin-middleware');
 const { superadminController } = require('./superadmin-controller');
 const { rightsController } = require('./rights-controller');
+const { decorate } = require('../workspace/view');
 
 const template = readFileSync(path.resolve(__dirname, '../../views/users/index.html'), 'utf8');
 function usersRouter(pool, config, sessionMiddleware) {
@@ -34,9 +35,9 @@ function usersRouter(pool, config, sessionMiddleware) {
   }, sessionMiddleware, authenticate, manager);
   router.get('/users', (req, res) => {
     const superadmin = req.user.role === 'superadmin';
-    res.type('html').send(template.replace('<!--METADATA_FILTER-->', superadmin ? '<label>Deleted rows<select name="deleted"><option value="all">All</option><option value="false">Not deleted</option><option value="true">Deleted only</option></select></label>' : '')
+    res.type('html').send(decorate(template.replace('<!--METADATA_FILTER-->', superadmin ? '<label>Deleted rows<select name="deleted"><option value="all">All</option><option value="false">Not deleted</option><option value="true">Deleted only</option></select></label>' : '')
       .replace('<!--SUPER_ROLE-->', superadmin ? '<option value="superadmin">Superadmin</option>' : '')
-      .replace('<!--CREATE_ROLE-->', '<label>Role<select name="role"><option value="user">User</option>' + (superadmin ? '<option value="admin">Admin</option><option value="superadmin">Superadmin</option>' : '') + '</select></label>'));
+      .replace('<!--CREATE_ROLE-->', '<label>Role<select name="role"><option value="user">User</option>' + (superadmin ? '<option value="admin">Admin</option><option value="superadmin">Superadmin</option>' : '') + '</select></label>')));
   });
   router.get('/api/users', controller.list);
   router.get('/api/users/:id', controller.get);

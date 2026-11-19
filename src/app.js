@@ -5,6 +5,7 @@ const { createSessionMiddleware } = require('./auth/session');
 const { authRouter } = require('./auth/routes');
 const { resetRouter } = require('./password-reset/routes');
 const { usersRouter } = require('./users/routes');
+const { workspaceRouter } = require('./workspace/routes');
 
 function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions } = {}) {
   const app = express();
@@ -24,10 +25,12 @@ function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions }
   app.get('/login', (req, res) => res.sendFile(path.resolve(__dirname, '../public/login.html')));
   app.get('/auth.js', (req, res) => res.sendFile(path.resolve(__dirname, '../public/auth.js')));
   if (authConfig) {
+    app.get('/', (req, res) => res.redirect('/account'));
     const sessions = createSessionMiddleware(pool, authConfig, sessionStore);
     app.locals.closeAuthStore = () => sessions.store.close?.();
     app.use(authRouter(pool, authConfig, sessions.middleware));
     app.use(usersRouter(pool, authConfig, sessions.middleware));
+    app.use(workspaceRouter(pool, authConfig, sessions.middleware));
   }
 
   if (resetConfig && authConfig) {

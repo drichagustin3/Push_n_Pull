@@ -4,6 +4,7 @@ const path = require('node:path');
 const { authController } = require('./controller');
 const { requireAuth, requireSession } = require('./middleware');
 const { AuthError } = require('./service');
+const { page } = require('../workspace/view');
 
 function authRouter(pool, config, sessionMiddleware) {
   const router = Router();
@@ -25,7 +26,8 @@ function authRouter(pool, config, sessionMiddleware) {
   router.post(['/api/v1/auth/logout', '/logout'], postGuard, sessionMiddleware, controller.logout);
   router.get('/api/v1/auth/session', sessionMiddleware, full, controller.session);
   router.get('/set-password', sessionMiddleware, restricted, (req, res) => res.sendFile(path.resolve(__dirname, '../../views/auth/set-password.html')));
-  router.get('/account', sessionMiddleware, full, (req, res) => res.sendFile(path.resolve(__dirname, '../../views/auth/account.html')));
+  router.get('/account', sessionMiddleware, full, (req, res) => res.set({ 'Referrer-Policy': 'no-referrer',
+    'Content-Security-Policy': "default-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'" }).send(page('Main page', true)));
   router.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     const expected = error instanceof AuthError;
