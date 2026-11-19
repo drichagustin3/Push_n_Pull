@@ -4,6 +4,7 @@ const { ConfigurationError, loadConfig } = require('./config/env');
 const { createPool, verifyConnection } = require('./db/pool');
 const { readAuthConfig } = require('./auth/config');
 const { verifyAuthSchema } = require('./auth/service');
+const { readResetConfig } = require('./password-reset/config');
 
 async function startServer({ config, pool }) {
   let server;
@@ -11,7 +12,8 @@ async function startServer({ config, pool }) {
   try {
     await verifyConnection(pool);
     if (config.auth) await verifyAuthSchema(pool);
-    app = createApp({ pool, authConfig: config.auth });
+    if (config.reset) await pool.query('SELECT id,user_id,token_hash,expires_at,is_used,created_at,used_at FROM password_reset_token LIMIT 0');
+    app = createApp({ pool, authConfig: config.auth, resetConfig: config.reset });
     server = createServer(app);
     await new Promise((resolve, reject) => {
       server.once('error', reject);
@@ -21,7 +23,9 @@ async function startServer({ config, pool }) {
       });
     });
   } catch (error) {
-    try { await app?.locals.closeAuthStore?.(); } finally { await pool.end(); }
+    try { await app?.locals.closePasswordReset?.(); } finally {
+      try { await app?.locals.closeAuthStore?.(); } finally { await pool.end(); }
+    }
     throw error;
   }
 
@@ -34,7 +38,9 @@ async function startServer({ config, pool }) {
           server.close((error) => (error ? reject(error) : resolve()));
         });
       } finally {
-        try { await app.locals.closeAuthStore?.(); } finally { await pool.end(); }
+        try { await app.locals.closePasswordReset?.(); } finally {
+          try { await app.locals.closeAuthStore?.(); } finally { await pool.end(); }
+        }
       }
     })();
     return shutdownPromise;
@@ -47,6 +53,7 @@ async function main() {
   try {
     const config = loadConfig();
     config.auth = readAuthConfig(process.env, config.nodeEnv);
+    config.reset = readResetConfig(process.env, config.nodeEnv, config.auth);
     const pool = createPool(config.database);
     const { shutdown } = await startServer({ config, pool });
     console.log(`HOPE ERP listening on port ${config.port}.`);
