@@ -17,7 +17,7 @@ const fixture = { user_id: '2', first_name: '<img src=x onerror=alert(1)>', last
 const response = (data, ok = true, status = 200) => ({ ok, status, json: async () => data });
 const listing = (users = [fixture], showMetadata = false) => ({ users, viewer: { role: showMetadata ? 'superadmin' : 'admin', showMetadata }, page: 1, hasMore: false });
 const flush = () => new Promise((resolve) => setImmediate(resolve));
-function mount(fetch, confirm = () => true) {
+function mount(fetch, confirm = () => true, openRights = () => {}) {
   const nodes = Object.fromEntries(['filters', 'editor', 'message', 'directoryState', 'directoryBody', 'directoryHead', 'previous', 'next', 'page', 'passwordFields', 'editorTitle', 'saveUser', 'cancelEdit'].map((id) => [id, new Element()]));
   const fields = Object.fromEntries(['id', 'firstName', 'lastName', 'email', 'empno', 'password', 'confirmPassword', 'role'].map((key) => [key, new Element()]));
   fields.role.value = 'user';
@@ -26,7 +26,7 @@ function mount(fetch, confirm = () => true) {
   nodes.editor.querySelectorAll = () => [fields.password, fields.confirmPassword];
   vm.runInNewContext(readFileSync(path.resolve(__dirname, '../public/users.js'), 'utf8'), {
     document: { getElementById: (id) => nodes[id], createElement: () => new Element() },
-    fetch, URLSearchParams, TypeError, window: { confirm },
+    fetch, URLSearchParams, TypeError, window: { confirm, HopeRights: { open: openRights } },
     FormData: class { constructor(form) {
       return form === nodes.filters ? [['search', ''], ['blocked', 'all'], ['role', 'all']]
         : Object.entries(fields).filter(([key]) => !nodes.passwordFields.disabled || !['password', 'confirmPassword', 'role'].includes(key)).map(([key, element]) => [key, element.value]);
@@ -148,4 +148,12 @@ test('DEV-06 role selector sends the selected role; guard errors are displayed a
   assert.deepEqual(sent, { url: '/api/users/2/role', method: 'PUT', body: { role: 'superadmin' } });
   assert.match(ui.nodes.message.textContent, /last remaining Superadmin/);
   assert.equal(actions[1].disabled, false);
+});
+test('DEV-07 Rights action opens the eligible account dialog and preserves its focus trigger', async () => {
+  let opened;
+  const ui = mount(async () => response(listing([{ ...fixture, can_manage_rights: true }])) , undefined, (user, trigger) => { opened = { user, trigger }; });
+  await flush();
+  const button = ui.nodes.directoryBody.childNodes[0].childNodes.at(-1).childNodes[0];
+  assert.equal(button.textContent, 'Rights'); button.events.click();
+  assert.equal(opened.user.user_id, fixture.user_id); assert.equal(opened.trigger, button);
 });

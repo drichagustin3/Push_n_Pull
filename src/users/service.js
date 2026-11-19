@@ -11,6 +11,8 @@ function publicUser(row, actor) {
   for (const key of columns(actor).split(',')) result[key] = row[key];
   result.can_edit = !row.is_deleted && (isSuperadmin(actor) || row.role === 'user');
   result.can_block = result.can_edit && (isSuperadmin(actor) || (row.role !== 'superadmin' && String(row.user_id) !== String(actor.user_id)));
+  result.can_manage_rights = (isSuperadmin(actor) || row.role === 'user')
+    && (row.rights_eligible ?? (!row.is_deleted && row.status === 'active' && !row.blocked));
   if (isSuperadmin(actor)) {
     result.can_approve = !row.is_deleted && row.role === 'user' && row.status === 'pending' && !row.blocked;
     result.can_reject = !row.is_deleted && row.role === 'user' && row.status === 'pending';
@@ -26,16 +28,16 @@ async function listUsers(pool, actor, filter) {
     AND ($4='all' OR is_deleted=($4='true'))
     AND (first_name ILIKE $5 ESCAPE E'\\\\' OR last_name ILIKE $5 ESCAPE E'\\\\' OR email ILIKE $5 ESCAPE E'\\\\' OR (first_name || ' ' || last_name) ILIKE $5 ESCAPE E'\\\\')`;
   const values = [isSuperadmin(actor), filter.blocked, filter.role, isSuperadmin(actor) ? filter.deleted : 'false', search];
-  const result = await pool.query(`SELECT ${columns(actor)} FROM app_user ${where} ORDER BY user_id LIMIT 51 OFFSET $6`, [...values, (filter.page - 1) * 50]);
+  const result = await pool.query(`SELECT ${columns(actor)},(status='active' AND NOT blocked AND NOT is_deleted) AS rights_eligible FROM app_user ${where} ORDER BY user_id LIMIT 51 OFFSET $6`, [...values, (filter.page - 1) * 50]);
   return { users: result.rows.slice(0, 50).map((row) => publicUser(row, actor)), page: filter.page, hasMore: result.rows.length > 50,
     viewer: { user_id: String(actor.user_id), role: actor.role, showMetadata: isSuperadmin(actor) } };
 }
 async function getUser(pool, actor, id) {
-  const row = (await pool.query(`SELECT ${columns(actor)} FROM app_user WHERE user_id=$1 AND ($2::boolean OR (role='user' AND NOT is_deleted))`, [id, isSuperadmin(actor)])).rows[0];
+  const row = (await pool.query(`SELECT ${columns(actor)},(status='active' AND NOT blocked AND NOT is_deleted) AS rights_eligible FROM app_user WHERE user_id=$1 AND ($2::boolean OR (role='user' AND NOT is_deleted))`, [id, isSuperadmin(actor)])).rows[0];
   if (!row) throw new UserManagementError(404, 'Account not found.');
   return publicUser(row, actor);
 }
-async function mutate(pool, auth, id, operation) {
+async function withManagedUser(pool, auth, id, operation) {
   const client = await pool.connect();
   try {
     await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
@@ -51,9 +53,12 @@ async function mutate(pool, auth, id, operation) {
     await client.query("SELECT set_config('app.username',$1,true)", [actor.email]);
     const row = await operation(client, actor, target);
     await client.query('COMMIT');
-    return publicUser(row, actor);
+    return row;
   } catch (error) { await client.query('ROLLBACK'); throw error; }
   finally { client.release(); }
+}
+function mutate(pool, auth, id, operation) {
+  return withManagedUser(pool, auth, id, async (client, actor, target) => publicUser(await operation(client, actor, target), actor));
 }
 async function addUser(pool, auth, data) {
   const role = data.role ?? 'user';
@@ -89,5 +94,5 @@ function blockUser(pool, auth, id, blocked) {
     return row;
   });
 }
-module.exports = { listUsers, getUser, addUser, editUser, blockUser, mutateUser: mutate,
+module.exports = { listUsers, getUser, addUser, editUser, blockUser, mutateUser: mutate, withManagedUser,
   managedColumns: baseColumns + ',status,stamp,is_deleted' };

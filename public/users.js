@@ -46,6 +46,10 @@ async function load() {
       for (const value of [user.first_name + ' ' + user.last_name, user.email, user.role, user.blocked ? 'Blocked' : 'Unblocked', user.empno,
         ...(data.viewer.showMetadata ? [user.status, user.stamp, user.is_deleted ? 'Yes' : 'No'] : [])]) cell(row, value);
       const actions = cell(row, '');
+      if (user.can_manage_rights) {
+        const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Rights';
+        button.addEventListener('click', () => { if (!saving && !loading) void window.HopeRights.open(user, button); }); actions.append(button);
+      }
       if (user.can_edit) {
         const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Edit'; button.addEventListener('click', () => { if (!saving) edit(user); }); actions.append(button);
       }

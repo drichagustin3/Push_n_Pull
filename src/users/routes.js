@@ -8,12 +8,14 @@ const { usersController } = require('./controller');
 const { UserManagementError } = require('./validation');
 const { requireSuperadmin } = require('./superadmin-middleware');
 const { superadminController } = require('./superadmin-controller');
+const { rightsController } = require('./rights-controller');
 
 const template = readFileSync(path.resolve(__dirname, '../../views/users/index.html'), 'utf8');
 function usersRouter(pool, config, sessionMiddleware) {
   const router = Router();
   const controller = usersController(pool);
   const superadmin = superadminController(pool);
+  const rights = rightsController(pool);
   const authenticate = requireAuth(pool, config);
   const manager = (req, res, next) => ['admin', 'superadmin'].includes(req.user.role)
     ? next() : res.status(403).json({ error: 'User Management requires an administrator.' });
@@ -42,6 +44,8 @@ function usersRouter(pool, config, sessionMiddleware) {
   router.put('/api/users/:id', guard(), limiter, controller.edit);
   router.put('/api/users/:id/block', guard(true), limiter, controller.toggleBlock);
   router.patch('/api/users/:id/blocked', guard(), limiter, controller.block);
+  router.get('/api/users/:id/rights', rights.get);
+  router.put('/api/users/:id/rights', guard(), limiter, rights.put);
   router.put('/api/users/:id/approve', requireSuperadmin, guard(true), limiter, superadmin.approve);
   router.put('/api/users/:id/reject', requireSuperadmin, guard(true), limiter, superadmin.reject);
   router.put('/api/users/:id/role', requireSuperadmin, guard(), limiter, superadmin.role);

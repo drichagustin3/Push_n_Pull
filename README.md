@@ -107,8 +107,12 @@ Admins manage Users only. Superadmins can create privileged accounts.
 
 Superadmin approval/rejection, role assignment and guarded soft deletion are now
 implemented in [S1-DEV-06](docs/S1-DEV-06.md), including last-active-Superadmin
-protection on both block routes. Rights assignment and dashboard filtering remain
-separate tasks.
+protection on both block routes.
+
+The User Management Rights dialog is implemented in
+[S1-DEV-07](docs/S1-DEV-07.md): eligible accounts have a Rights action for the
+36 grouped permissions, with transactional updates and existing trigger auditing.
+Dashboard/sidebar and downstream permission enforcement remain DEV-08 work.
 
 ### Configuration
 
