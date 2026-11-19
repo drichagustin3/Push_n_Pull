@@ -58,6 +58,30 @@ async function load() {
           finally { saving = false; button.disabled = false; }
         }); actions.append(button);
       }
+      if (data.viewer.role === 'superadmin') {
+        const action = (text, suffix, method, body, confirmation) => {
+          const button = document.createElement('button'); button.type = 'button'; button.textContent = text;
+          button.addEventListener('click', async () => {
+            if (saving || loading || (confirmation && !window.confirm(confirmation))) return;
+            saving = true; button.disabled = true;
+            try {
+              await api(`/api/users/${user.user_id}${suffix}`, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body()) });
+              notify('Account updated. Existing sessions may require signing in again.'); await load();
+            } catch (error) { notify(error instanceof TypeError ? 'Check your connection and try again.' : error.message); }
+            finally { saving = false; button.disabled = false; }
+          }); actions.append(button);
+        };
+        if (user.can_approve) action('Approve', '/approve', 'PUT', () => ({}));
+        if (user.can_reject) action('Reject', '/reject', 'PUT', () => ({}), 'Reject this pending registration?');
+        if (user.can_change_role) {
+          const label = document.createElement('label'); label.textContent = 'Role';
+          const select = document.createElement('select');
+          for (const role of ['user', 'admin', 'superadmin']) { const option = document.createElement('option'); option.value = role; option.textContent = role; select.append(option); }
+          select.value = user.role; label.append(select); actions.append(label);
+          action('Assign role', '/role', 'PUT', () => ({ role: select.value }), 'Change this account role and invalidate its sessions?');
+        }
+        if (user.can_remove) action('Delete', '', 'DELETE', () => ({}), 'Soft-delete this account and end its sessions?');
+      }
       if (!actions.childNodes.length) actions.textContent = '—'; tbody.append(row);
     }
     document.getElementById('page').textContent = `Page ${data.page}`; previous.disabled = page <= 1; next.disabled = !data.hasMore;

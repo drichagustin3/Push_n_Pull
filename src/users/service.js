@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const { checkAccount } = require('../auth/service');
 const { UserManagementError } = require('./validation');
+const { assertSuperadmin, lockAccountChanges, protectLastSuperadmin } = require('./superadmin-guard');
 
 const baseColumns = 'user_id,first_name,last_name,email,role,blocked,empno';
 const isSuperadmin = (actor) => actor.role === 'superadmin';
@@ -9,8 +10,13 @@ function publicUser(row, actor) {
   const result = {};
   for (const key of columns(actor).split(',')) result[key] = row[key];
   result.can_edit = !row.is_deleted && (isSuperadmin(actor) || row.role === 'user');
-  // Superadmin disabling belongs to DEV-06 and is unavailable here.
-  result.can_block = result.can_edit && row.role !== 'superadmin' && String(row.user_id) !== String(actor.user_id);
+  result.can_block = result.can_edit && (isSuperadmin(actor) || (row.role !== 'superadmin' && String(row.user_id) !== String(actor.user_id)));
+  if (isSuperadmin(actor)) {
+    result.can_approve = !row.is_deleted && row.role === 'user' && row.status === 'pending' && !row.blocked;
+    result.can_reject = !row.is_deleted && row.role === 'user' && row.status === 'pending';
+    result.can_change_role = !row.is_deleted && row.status === 'active' && !row.blocked;
+    result.can_remove = !row.is_deleted;
+  }
   return result;
 }
 async function listUsers(pool, actor, filter) {
@@ -32,7 +38,8 @@ async function getUser(pool, actor, id) {
 async function mutate(pool, auth, id, operation) {
   const client = await pool.connect();
   try {
-    await client.query('BEGIN');
+    await client.query('BEGIN ISOLATION LEVEL READ COMMITTED');
+    await lockAccountChanges(client);
     // A stable lock order prevents concurrent managers editing one another from deadlocking.
     const rows = (await client.query('SELECT user_id,email,role,blocked,status,is_deleted,session_version FROM app_user WHERE user_id=ANY($1::bigint[]) ORDER BY user_id FOR UPDATE', [[String(auth.user.user_id), ...(id ? [id] : [])]])).rows;
     const actor = rows.find((row) => String(row.user_id) === String(auth.user.user_id));
@@ -70,14 +77,17 @@ function editUser(pool, auth, id, data) {
   [data.firstName, data.lastName, data.email, Object.hasOwn(data, 'empno'), data.empno ?? null, id])).rows[0]);
 }
 function blockUser(pool, auth, id, blocked) {
-  if (String(auth.user.user_id) === id && blocked !== false) throw new UserManagementError(400, 'You cannot block your own account.');
+  if (!isSuperadmin(auth.user) && String(auth.user.user_id) === id && blocked !== false) throw new UserManagementError(400, 'You cannot block your own account.');
   return mutate(pool, auth, id, async (client, actor, target) => {
     const nextBlocked = blocked ?? !target.blocked;
-    if (String(actor.user_id) === id && nextBlocked) throw new UserManagementError(400, 'You cannot block your own account.');
-    if (target.role === 'superadmin') throw new UserManagementError(403, 'Superadmin disabling is not available in this operation.');
+    if (target.role === 'superadmin') {
+      assertSuperadmin(actor);
+      if (nextBlocked) await protectLastSuperadmin(client, target);
+    } else if (String(actor.user_id) === id && nextBlocked) throw new UserManagementError(400, 'You cannot block your own account.');
     const row = (await client.query(`UPDATE app_user SET blocked=$1 WHERE user_id=$2 RETURNING ${baseColumns},status,stamp,is_deleted`, [nextBlocked, id])).rows[0];
     if (nextBlocked) await client.query("DELETE FROM auth_session WHERE sess->'user'->>'user_id'=$1", [id]);
     return row;
   });
 }
-module.exports = { listUsers, getUser, addUser, editUser, blockUser };
+module.exports = { listUsers, getUser, addUser, editUser, blockUser, mutateUser: mutate,
+  managedColumns: baseColumns + ',status,stamp,is_deleted' };

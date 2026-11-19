@@ -17,7 +17,7 @@ const fixture = { user_id: '2', first_name: '<img src=x onerror=alert(1)>', last
 const response = (data, ok = true, status = 200) => ({ ok, status, json: async () => data });
 const listing = (users = [fixture], showMetadata = false) => ({ users, viewer: { role: showMetadata ? 'superadmin' : 'admin', showMetadata }, page: 1, hasMore: false });
 const flush = () => new Promise((resolve) => setImmediate(resolve));
-function mount(fetch) {
+function mount(fetch, confirm = () => true) {
   const nodes = Object.fromEntries(['filters', 'editor', 'message', 'directoryState', 'directoryBody', 'directoryHead', 'previous', 'next', 'page', 'passwordFields', 'editorTitle', 'saveUser', 'cancelEdit'].map((id) => [id, new Element()]));
   const fields = Object.fromEntries(['id', 'firstName', 'lastName', 'email', 'empno', 'password', 'confirmPassword', 'role'].map((key) => [key, new Element()]));
   fields.role.value = 'user';
@@ -26,7 +26,7 @@ function mount(fetch) {
   nodes.editor.querySelectorAll = () => [fields.password, fields.confirmPassword];
   vm.runInNewContext(readFileSync(path.resolve(__dirname, '../public/users.js'), 'utf8'), {
     document: { getElementById: (id) => nodes[id], createElement: () => new Element() },
-    fetch, URLSearchParams, TypeError,
+    fetch, URLSearchParams, TypeError, window: { confirm },
     FormData: class { constructor(form) {
       return form === nodes.filters ? [['search', ''], ['blocked', 'all'], ['role', 'all']]
         : Object.entries(fields).filter(([key]) => !nodes.passwordFields.disabled || !['password', 'confirmPassword', 'role'].includes(key)).map(([key, element]) => [key, element.value]);
@@ -115,4 +115,37 @@ test('privileged creation submits the selected role but never sends it in profil
   await ui.submit();
   assert.equal(sent.role, 'admin');
   assert.equal(ui.fields.role.value, 'user');
+});
+test('DEV-06 approval/rejection/removal buttons are Superadmin-only and destructive cancellation is respected', async () => {
+  const pending = { ...fixture, can_edit: false, can_block: false, can_approve: true, can_reject: true, can_remove: true };
+  const sent = [];
+  const ui = mount(async (url, options) => {
+    if (!options?.method) return response(listing([pending], true));
+    sent.push({ url, method: options.method, body: JSON.parse(options.body) }); return response({ user: pending });
+  });
+  await flush();
+  const actions = () => ui.nodes.directoryBody.childNodes[0].childNodes.at(-1).childNodes;
+  assert.deepEqual(actions().map((button) => button.textContent), ['Approve', 'Reject', 'Delete']);
+  await actions()[0].events.click(); await actions()[1].events.click(); await actions()[2].events.click();
+  assert.deepEqual(sent.map((request) => [request.url, request.method]), [['/api/users/2/approve', 'PUT'], ['/api/users/2/reject', 'PUT'], ['/api/users/2', 'DELETE']]);
+  const cancelled = mount(async (url, options) => { assert.equal(options?.method, undefined); return response(listing([pending], true)); }, () => false);
+  await flush(); await cancelled.nodes.directoryBody.childNodes[0].childNodes.at(-1).childNodes[2].events.click();
+  const admin = mount(async () => response(listing([pending], false))); await flush();
+  assert.equal(admin.nodes.directoryBody.childNodes[0].childNodes.at(-1).textContent, '—');
+});
+test('DEV-06 role selector sends the selected role; guard errors are displayed and permit retry', async () => {
+  const target = { ...fixture, can_edit: false, can_block: false, can_change_role: true };
+  let sent;
+  const ui = mount(async (url, options) => {
+    if (!options?.method) return response(listing([target], true));
+    sent = { url, method: options.method, body: JSON.parse(options.body) };
+    return response({ error: 'Action blocked: Cannot remove, demote, or disable the last remaining Superadmin.' }, false, 403);
+  });
+  await flush();
+  const actions = ui.nodes.directoryBody.childNodes[0].childNodes.at(-1).childNodes;
+  actions[0].childNodes[0].value = 'superadmin';
+  await actions[1].events.click();
+  assert.deepEqual(sent, { url: '/api/users/2/role', method: 'PUT', body: { role: 'superadmin' } });
+  assert.match(ui.nodes.message.textContent, /last remaining Superadmin/);
+  assert.equal(actions[1].disabled, false);
 });

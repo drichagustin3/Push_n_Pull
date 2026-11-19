@@ -166,8 +166,9 @@ test('User Management over live Express and PostgreSQL', {
     assert.equal((await request('/api/users', { cookie: cookies.admin })).status, 200);
     assert.equal((await request(target, { method: 'PATCH', body: { blocked: false }, cookie: cookies.admin })).status, 200);
     assert.equal((await login(user)).status, 200);
-    for (const [actor, cookie] of [[admin, cookies.admin], [superadmin, cookies.superadmin]]) assert.equal((await request(`/api/users/${actor.id}/blocked`, { method: 'PATCH', cookie, body: { blocked: true } })).status, 400);
-    assert.equal((await request(`/api/users/${superadmin.id}/blocked`, { method: 'PATCH', cookie: cookies.superadmin, body: { blocked: false } })).status, 403);
+    assert.equal((await request(`/api/users/${admin.id}/blocked`, { method: 'PATCH', cookie: cookies.admin, body: { blocked: true } })).status, 400);
+    // DEV-06 permits Superadmin operations under its transactional last-account guard.
+    assert.equal((await request(`/api/users/${superadmin.id}/blocked`, { method: 'PATCH', cookie: cookies.superadmin, body: { blocked: false } })).status, 200);
     assert.equal((await request(`/api/users/${pending.id}`, { method: 'PUT', cookie: cookies.superadmin, body: { ...profile(pending.email), status: 'active' } })).status, 400);
   });
   await t.test('issue #43: canonical PUT block toggles atomically, stamps/audits the actor and revokes sessions', async () => {
