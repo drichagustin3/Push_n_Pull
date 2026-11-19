@@ -261,3 +261,111 @@ The user approved committing/pushing the follow-up and opening existing PR #55
 for review; the original issue wording is not a blocker.
 No shared deployment, emails, replacement PR or merge is included in this
 publication. See S1-DBA-05-PR55-description.md for the current PR body.
+
+## Final PR #55 review — approved three-account scope
+
+This section supersedes earlier approval-status and publication-time statements
+where necessary. At final review PR #55 was OPEN, not Draft, targeted main, and
+the reviewed implementation head was 8b7ec2428584ddf17c99d665ba5cc2d97fb1042b.
+The seed implementation and migration history remain unchanged. The user later
+authorized publishing these documentation updates while keeping three accounts
+as the approved requirement; the older five-account wording is not a blocker.
+
+### Roster verification
+
+The officially approved three-person roster matches all JSON manifest fields
+and the exact three SQL seed tuples, including the approved emails:
+
+- drichagustin3 — Aldrich Rodolf Agustin — drichagustin.3@gmail.com
+- AshleyNicoleMarticio30 — Ashley Nicole Marticio — nicsmolina03@gmail.com
+- rickysanglay — Ricky Joe Sanglay — rickyjoesanglay56@gmail.com
+
+No extra or placeholder identities are present in the actual seed. Existing
+three-account provisioning behavior is unchanged.
+
+### GitHub issue check and prepared wording (not posted)
+
+Issue #47 remains OPEN. Its acceptance criterion still says:
+
+> All 5 team members have `Superadmin` access ready for testing.
+
+Its description names the same three handles, and its comments list is empty.
+The issue has therefore **not** been updated to document the official acceptance
+of three accounts. This is an administrative documentation follow-up, not a new
+account-count or implementation blocker under the user's approved requirement.
+
+Ready-to-paste approval wording:
+
+```markdown
+Approved scope clarification for S1-DBA-05:
+
+Three initial Superadmin accounts are officially accepted instead of five:
+- drichagustin3 — Aldrich Rodolf Agustin
+- AshleyNicoleMarticio30 — Ashley Nicole Marticio
+- rickysanglay — Ricky Joe Sanglay
+
+This approval supersedes the original five-account requirement. Use the approved
+three-person seed roster; do not invent two additional accounts. The five
+functional modules and exact 36-right catalogue requirements are unchanged.
+
+The implementation has passed isolated database verification. Shared deployment
+and real invitation generation/delivery have not occurred and require separate
+authorization. Isolated fixtures do not establish live team-account readiness.
+```
+
+Exact replacement for the account acceptance criterion, if the issue body is
+subsequently authorized for editing (leave unchecked until accepted):
+
+```markdown
+- [ ] All three approved initial Superadmin accounts are securely provisioned and ready for testing, with existing account credentials and security settings preserved.
+```
+
+No GitHub issue was edited and no approval comment was posted by this review.
+
+### Current nine-group rerun
+
+Created a fresh private Codespaces PostgreSQL 16.15 cluster with TCP disabled,
+verified its data directory/private Unix socket and empty initial database,
+applied only DBA-01–04, and confirmed zero accounts and no DBA-06 function.
+Ran the unchanged database/tests/run_dba05.py with Python assertions and all
+runner safety guards enabled. It exited 0; all nine reported groups passed:
+
+| Group | Actual final-review result |
+| --- | --- |
+| Conflicting/duplicate/disabled rights reject without changes | PASS |
+| Missing/expired/reused/unapproved proof configuration rejects atomically | PASS |
+| Injected failure rolls data/audits/FK deferrability back | PASS |
+| Five modules and exact 36 rights/mappings/descriptions | PASS |
+| Original permissions, accounts/security, sessions and history preserved | PASS |
+| Exact rerun produces no changes/audit events and restores FK | PASS |
+| Empty catalogue receives missing entries and exactly three approved identities | PASS |
+| Settled/unavailable account state preserved; conflicting role never promoted | PASS |
+| Approved three-person seed confirmed in the isolated fixture database | PASS |
+
+Both read-only issue verifiers passed afterward (hopedb and hopedb_dba05_empty).
+The test cluster was then stopped. The run used fixture digests only; no
+provisioning CLI, mail sender, raw invitation generator or private delivery file
+creation was executed. Your Windows/shared databases were not contacted.
+The log is /tmp/hope-dba05-final-review-19pjmo47/dba05-final-review.log.
+
+The prior operator/onboarding and 30/13 HTTP regression results remain historical
+PASS evidence; they were not rerun during this review. Windows PostgreSQL 18.6,
+shared deployment and actual invitation delivery are NOT RUN. No unexpected
+FAIL results occurred in the current nine-group rerun.
+
+### Final diff and readiness
+
+The PR's three-dot diff contains exactly 11 S1-DBA-05 files and two task commits:
+93ef0be and 8b7ec24. Reviewed migration, manifest, operator tool, test assertions
+and documentation. No application source, package/dependency changes, previous
+migration edits, DBA-06 files, .env or private delivery artifacts are included.
+GitHub reports no checks or reviews; local executions must not be represented
+as GitHub CI or reviewer approval.
+
+**READY FOR REVIEW under the officially accepted three-account scope.** No
+implementation/test blocker found. Record the approval in issue #47 when
+explicitly authorized; retain normal reviewer/merge approval and deployment
+verification gates. Shared deployment and real invitations have not occurred.
+The reviewed PR body is S1-DBA-05-PR55-description.md. Publication of these
+documentation updates is authorized. No shared deployment, invitation generation,
+merge or GitHub issue mutation is part of this publication.

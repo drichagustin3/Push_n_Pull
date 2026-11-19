@@ -1,95 +1,112 @@
 ## Summary
 
-Complete S1-DBA-05 for the user-approved **three initial Superadmins**, five
-modules and exactly 36 issue-required granular rights, preserving existing data
-and first-login security.
+Implement S1-DBA-05 for the officially accepted **three initial Superadmins**,
+five functional modules and exactly 36 granular rights. Preserve existing
+accounts, permission state, credentials and audit history.
 
-Related issue: #47. **The approved acceptance requirement is three accounts.**
-The user explicitly superseded the original five-account wording; no additional
-identities or count-related changes are required. Publication and opening this
-existing PR for review have been approved.
+Related issue: #47. The approved roster consists of `drichagustin3`,
+`AshleyNicoleMarticio30` and `rickysanglay`. The JSON identity manifest and SQL
+seed match exactly. The approved count is three; no additional identities are
+required.
 
-**Publication scope:** this PR includes the tested seed migration, operator
-tooling and verification follow-up. No shared deployment or invite email has
-been performed.
+**Issue wording:** inspection confirmed issue #47 still says "All 5 team
+members" and has no comments documenting the change. Exact approval wording is
+prepared in the final-review section of S1-DBA-05-PR55-resolution.md. This review
+has not edited the GitHub issue or posted that wording.
+
+**Deployment status:** shared deployment, real Superadmin invitation generation
+and invite delivery have not occurred. Isolated test records/digests are not
+live team accounts or usable invitations.
 
 ## Changes
 
-- Add a transaction-safe, idempotent seed migration for five modules and exactly
-  36 active issue-required rights.
-- Reconcile the 18 differing identifiers one-to-one in catalogue/permission rows;
-  preserve granted/revoked state, historical audits and the exact original FK.
-- Add the approved three-person identity manifest and secure new-account seed.
-  Existing matching accounts keep their credentials/security state; conflicting
-  identities/roles fail for review rather than being silently promoted/reset.
-- Add a DBA operator tool that supplies per-account digest/expiry transactionally
-  and stores raw proofs only in a 0600 file outside Git. No email sending or
-  plaintext/shared passwords; the existing ownership-verified first-login flow
-  sets each owner's bcrypt password and consumes the proof once.
-- Add migration, conflict/rollback/preservation, consumer compatibility and actual
-  three-account onboarding verification; preserve the initial inspection report.
+- Add a transactional, repeatable seed for five modules and exactly 36 active
+  issue-required rights, inserting only missing valid records.
+- Reconcile 18 code spellings one-to-one in rights_catalogue/user_permission;
+  preserve granted/revoked state, original FK definition and historical audits.
+  Reject ambiguous, conflicting, unknown or disabled catalogue records.
+- Seed only the approved three identities with private, expiring setup proofs.
+  Existing matching accounts retain credentials/security state; conflicting
+  identities/roles fail for manual review instead of automatic promotion/reset.
+- Add a DBA operator tool that binds setup digests/expiry transactionally and
+  stores raw proofs only in a private file outside Git. It sends no email.
+- Retain ownership-verified DEV-03 first login: a private proof establishes a
+  restricted setup session, the owner sets a bcrypt password, and proof replay
+  is rejected. No application code changes or authentication bypasses.
+- Add isolated migration, conflict, rollback, preservation, consumer and onboarding
+  tests, plus the verification and approval documentation.
 
 ## Database Dependencies
 
-Requires merged DBA-03 and its existing audit/link/soft-delete protections.
-DBA-04 is included in preservation/authentication regression tests.
-No DBA-06 changes, Developer implementation edits, old migration rewrites or
-unrelated Sprint 2 structures are included. The operator CLI is a DBA tool, not
-an application behavior change.
+DBA-03 supplies the RBAC/account/audit objects. DBA-04 is included in the test
+baseline and preservation checks. No DBA-06 changes or prior migration edits
+are included. The operator CLI is DBA tooling, not application behavior.
 
 ## Testing Notes
 
-Executed in isolated local PostgreSQL 16 hopedb databases matching DBA-01–04:
+**Current final-review rerun:** the unchanged run_dba05.py completed with exit 0
+on a fresh private PostgreSQL **16.15** Unix-socket cluster, with TCP disabled,
+DBA-01–04 applied, zero initial accounts, no DBA-06 function and all safety guards
+enabled. The cluster was stopped after verification.
 
-- **PASS:** migration application/rerun, five modules, exact 36 issue codes,
-  descriptions/mappings and active count; no duplicate aliases.
-- **PASS:** all 73 synthetic active/revoked/deleted-user associations preserved
-  one-to-one; no FK orphans; original FK/schema restored.
-- **PASS:** original account/security/session/reset-token/historical-audit data
-  preserved; rerun makes no additional changes/audit entries.
-- **PASS:** end-of-migration rollback and duplicate/conflicting/disabled-code
-  rejection; missing/expired/reused/unapproved setup proofs fail atomically.
-- **PASS:** exactly three approved identities provisioned; no fabricated users,
-  existing-role promotion, credential reset or blocked-account reactivation.
-- **PASS:** dedicated actual operator/HTTP/PostgreSQL onboarding test for all
-  three accounts: private artifact permissions, no email-only claim, restricted
-  setup, bcrypt storage, replay rejection and settled-account rerun preservation.
-- **PASS:** 30 existing/targeted consumer HTTP/PostgreSQL tests, plus 13 tests
-  directly from latest main; zero failures/skips. Last-Superadmin fixture tests
-  isolate active-account counts by deactivating only disposable seeded identities.
-- **PASS:** operator rejects a private-artifact directory inside Git; whitespace
-  and task-scope checks.
-- **NOT RUN:** shared deployment, actual invite delivery and DEV-08 business
-  metrics suite (independent business soft-delete migration is absent).
+All nine reported groups **PASS**:
+
+1. Duplicate, conflicting and disabled rights rejected atomically.
+2. Missing, expired, reused and unapproved proof configuration rejected atomically.
+3. Injected failure rolls back data, audit additions and FK changes.
+4. Five modules and exact 36 issue rights/descriptions/mappings verified.
+5. All 73 fixture permission associations and existing security/history preserved.
+6. Exact migration rerun is a data/audit no-op; original FK restored.
+7. Empty-catalogue seeding inserts missing records and exactly three approved identities.
+8. Existing credentials/block/status/deletion state preserved; no silent promotion.
+9. Approved three-person roster verified in the disposable database.
+
+Both post-test read-only issue verifiers also **PASS** (hopedb and
+hopedb_dba05_empty). Final diff, roster and whitespace checks **PASS**.
+
+**Earlier regression evidence, not rerun in this review:** 30 HTTP/PostgreSQL
+consumer tests, 13 latest-main authentication/user-management tests, and the
+operator/three-account onboarding test previously passed. Those runs are
+historical evidence, not new final-review executions.
+
+**NOT RUN in this review:** operator/onboarding CLI, Windows PostgreSQL 18.6
+execution, shared deployment, real proof generation, invitation delivery and
+the independent DEV-08 business metrics suite. The current run uses fixture
+digests only and creates no private delivery files.
 
 ## Security Verification
 
-New-account proofs are cryptographic, distinct, private and expiring; only their
-SHA-256 digests/expiry reach the DB. Passwords are set by owners through existing
-DEV-03. No password, proof, digest or session secret is added to Git/log output.
-Existing account roles, credentials, block/status/deleted flags, proofs and
-session state are preserved; historical audit records remain unchanged.
+New setup proofs are cryptographic, per-account and expiring; only their SHA-256
+digests/expiry enter PostgreSQL. Owners set passwords through existing DEV-03.
+Existing roles, credentials, block/status/deleted flags, proofs and session
+state are preserved. Audit history is immutable; reconciliation appends normal
+audit entries. No passwords, raw proofs or private delivery files belong in Git.
 
 ## Compatibility and Rollout
 
-DEV-07/08 dynamically load catalogue codes; all 18 new spellings pass unchanged
-consumer tests. No 54-right catalogue or legacy alias layer. Reload cached rights
-forms after deployment; old-code requests fail closed. An old example in DEV-08
-documentation is a separate Developer documentation follow-up.
+DEV-07/08 dynamically load catalogue codes; earlier unchanged-consumer tests
+cover all 18 spellings. No 54-right catalogue or alias layer is introduced.
+Reload cached rights forms after deployment: old-code requests fail closed.
+The old DEV-08 documentation example is a separate Developer follow-up.
 
-The migration requires private proof configuration for missing approved accounts;
-use the documented operator tool, not an unconfigured migration run. Generate
-proofs when owners can use their one-hour window. Existing proof expiry/recovery
-is not bypassed by rerunning the seed.
+Missing approved accounts require private proof configuration. Use the operator
+tool only after target verification and provisioning approval. It preserves
+existing proofs and does not renew expired invitations. Windows operator-file
+permissions and PostgreSQL 18.6 execution have not been validated by this Linux
+PostgreSQL 16 review.
 
 ## Scope Confirmation
 
-Only S1-DBA-05 seed, DBA operator tooling, tests and documentation in this existing
-PR/branch. No DBA-06 or Developer-task functionality changes.
+Only S1-DBA-05 seed, DBA tooling, tests and documentation in this branch/PR.
+No DBA-06, Developer-task implementation, business-schema or unrelated changes.
 
-## Remaining Items
+## Review Readiness and Deferred Actions
 
-- No account-count blocker remains: the approved roster contains three accounts.
-- Review and merge this existing PR through the normal approval process; no merge has been performed.
-- Apply on an authorized shared target and deliver each private proof to its
-  approved owner only after deployment approval. No actual invites have been sent.
+**READY FOR REVIEW against the officially approved three-account requirement.**
+No implementation/test blocker was found in this final review. The GitHub issue
+wording still needs its approval recorded; the prepared text has not been posted.
+The older five-account wording is informational, not a blocker under the approved
+three-account scope. Normal reviewer/merge approval remains outstanding. Publishing
+these documentation updates is authorized. Shared deployment and real invitations
+still require separate explicit authorization and target verification; neither
+has occurred, and no merge or GitHub issue edit is included.
