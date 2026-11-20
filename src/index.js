@@ -36,16 +36,21 @@ handler.use(async (req, res, next) => {
     appPromise ??= initializeApp();
     const app = await appPromise;
 
-if (process.env.VERCEL === '1') {
-  Object.defineProperty(req, 'secure', {
-    configurable: true,
-    value: req.get('x-forwarded-proto') === 'https',
-  });
-}
+    if (process.env.VERCEL === '1') {
+      Object.defineProperty(req, 'secure', {
+        configurable: true,
+        value: req.get('x-forwarded-proto') === 'https',
+      });
+    }
 
-app(req, res, next);
-  } catch {
-    console.error('HOPE ERP initialization failed.');
+    app(req, res, next);
+  } catch (error) {
+    console.error('HOPE ERP initialization failed:', {
+      name: error?.name,
+      code: error?.code,
+      message: error?.message,
+    });
+
     res.status(503).json({
       error: 'service_unavailable',
       message: 'The application is temporarily unavailable. Try again later.',
