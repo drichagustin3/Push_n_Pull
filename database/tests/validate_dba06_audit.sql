@@ -15,8 +15,9 @@ DECLARE
   before_count bigint;
   initial_stamp text;
   event public.audit_log%ROWTYPE;
+  bad_context text;
 BEGIN
-  PERFORM set_config('app.username', 'dba06-actor@example.test', true);
+  PERFORM set_config('app.username', '  dba06-actor@example.test  ', true);
   PERFORM pg_temp.assert_audit(public.audit_user()='dba06-actor@example.test', 'transaction actor');
   INSERT INTO public.app_user(first_name,last_name,email,status)
     VALUES('DBA06','Disposable', 'dba06-' || txid_current() || '@example.test','active') RETURNING user_id INTO target;
@@ -31,7 +32,7 @@ BEGIN
     AND event.new_values->>'last_name'='Changed', 'update before/after state');
 
   -- Safe synthetic digest: no real token exists, and no credential value is printed.
-  UPDATE public.app_user SET must_change_password=true,setup_token_hash=repeat('a',64),
+  UPDATE public.app_user SET must_change_password=true,setup_token_hash=md5(random()::text)||md5(random()::text),
     setup_token_expires_at=now()+interval '1 hour' WHERE user_id=target;
   SELECT * INTO event FROM public.audit_log WHERE table_name='app_user' AND record_key=target::text ORDER BY audit_id DESC LIMIT 1;
   PERFORM pg_temp.assert_audit(NOT (event.old_values ?| ARRAY['password_hash','setup_token_hash','setup_token_expires_at'])
@@ -104,6 +105,13 @@ BEGIN
   UPDATE public.app_user SET last_name='TextContext' WHERE user_id=target;
   SELECT * INTO event FROM public.audit_log WHERE table_name='app_user' AND record_key=target::text ORDER BY audit_id DESC LIMIT 1;
   PERFORM pg_temp.assert_audit(event.action_by='not-a-numeric-id','text context mutation has no unsafe numeric cast');
+  FOREACH bad_context IN ARRAY ARRAY['', '   ', E'forged\nactor', E'forged\tactor', repeat('x',255)] LOOP
+    PERFORM set_config('app.username',bad_context,true);
+    UPDATE public.app_user SET last_name='Fallback '||length(bad_context)::text WHERE user_id=target;
+    PERFORM pg_temp.assert_audit(public.audit_user()=session_user::text,'invalid/empty context has safe database fallback');
+    SELECT * INTO event FROM public.audit_log WHERE table_name='app_user' AND record_key=target::text ORDER BY audit_id DESC LIMIT 1;
+    PERFORM pg_temp.assert_audit(event.action_by=session_user::text,'invalid context cannot forge a persisted actor');
+  END LOOP;
   RAISE NOTICE 'PASS: actor, insert/update, composite key, redaction, no-op, grant/revoke/restore, hard-delete guard and rollback';
 END
 $test$;

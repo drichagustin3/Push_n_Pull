@@ -3,7 +3,8 @@
 PGHOST=/path/to/socket PGPORT=... PGUSER=... PGDATABASE=hopedb \
 DBA06_ALLOW_LOCAL_TEST=1 python3 database/tests/run_dba06.py
 
-Prerequisites: merged DBA-01 through DBA-04 migrations. Never use a shared DB.
+Prerequisites: DBA-01 through DBA-05 in an isolated disposable cluster.
+DBA-05 test fixtures only; never use a shared DB or real account credentials.
 Migration is applied to this disposable database; assertion fixtures roll back.
 """
 import os
@@ -50,11 +51,13 @@ def main():
       'functions',(SELECT jsonb_object_agg(p.oid::regprocedure::text,pg_get_functiondef(p.oid))
         FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace
         WHERE n.nspname='public' AND p.prokind='f'
-          AND p.proname NOT IN ('audit_redact','log_audit_event')),
+          AND p.proname NOT IN ('audit_user','audit_redact','log_audit_event')),
       'triggers',(SELECT jsonb_agg(pg_get_triggerdef(t.oid) ORDER BY t.tgrelid,t.tgname)
         FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
         JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public'
           AND NOT t.tgisinternal AND t.tgname<>'rbac_40_audit'))"""
+    actor_metadata = "SELECT jsonb_build_array(oid,proowner,proacl,prorettype,pronargs,proargtypes::text) FROM pg_proc WHERE oid='public.audit_user()'::regprocedure"
+    actor_before = success(actor_metadata)
     preserved = success(unchanged_objects)
     data_query = """SELECT jsonb_object_agg(name,digest) FROM (
       SELECT 'role' name,md5(coalesce(jsonb_agg(to_jsonb(t) ORDER BY role_code)::text,'')) digest FROM public.role t
@@ -89,13 +92,21 @@ def main():
     assert success("SELECT count(*) FROM pg_trigger WHERE tgname='rbac_40_audit' AND tgfoid='public.log_audit_event()'::regprocedure AND tgtype=29") == '5'
     print('PASS: exact migration applies twice, preserves history and leaves five stable audit triggers')
     assert success(unchanged_objects) == preserved, 'Migration changed an unrelated function or trigger'
-    print('PASS: existing context/stamp/compatibility functions and all unrelated triggers unchanged')
+    assert success(actor_metadata)==actor_before, 'Actor function identity/signature/owner/grants changed'
+    print('PASS: actor signature/owner/grants and all unrelated functions/triggers unchanged')
     for name in ['validate_dba06_audit.sql', 'validate_dba06_generic.sql']:
         before = history()
         success((ROOT / 'database/tests' / name).read_text())
         assert history() == before, f'{name} left fixture audit records behind'
         print(f'PASS: {name}; all fixtures rolled back')
     assert success(data_query) == before_data, 'Tests changed existing users, seeds or permission state'
+    success((ROOT / 'database/tests/validate_dba05_issue_catalogue.sql').read_text())
+    # Do not bypass DBA-05 runner's no-DBA-06 guard. Check the actual seed rerun
+    # and exact catalogue after installing DBA-06; full DBA-05 runner runs before it.
+    success((ROOT / 'supabase/migrations/20261119060000_dba05_catalogue_seed.sql').read_text())
+    assert success(data_query) == before_data, 'DBA-05 rerun changed users or permissions'
+    assert history()==before_history, 'DBA-05 rerun unexpectedly appended audit history'
+    print('PASS: DBA-05 catalogue and actual seed rerun preserve all fixture state under DBA-06')
     print('PASS: users, roles, modules, rights and permissions unchanged')
     print('PASS: DBA-06 database verification complete')
 

@@ -1,4 +1,4 @@
--- S1-DBA-06. Depends on DBA-03, not the unmerged DBA-05 seed task.
+-- S1-DBA-06. Apply after DBA-03; the reviewed rollout is stacked after DBA-05.
 -- Keep the merged audit columns/actions and app.username email/text contract.
 -- No data rewrites, grants, credential seeds or changes to hard-delete guards.
 BEGIN;
@@ -49,6 +49,18 @@ BEGIN
   END LOOP;
 END
 $preflight$;
+
+-- The established actor is a normalized email/username, not a bigint user_id.
+-- The trusted backend sets app.username locally AFTER BEGIN on the mutation client.
+-- A custom GUC is not authentication: never accept it from a browser/request body.
+-- Keep the reference's explicit database-login fallback for system/migration writes.
+-- Malformed control/oversized context falls back safely without unsafe casts.
+CREATE OR REPLACE FUNCTION public.audit_user() RETURNS text
+LANGUAGE sql STABLE SET search_path=pg_catalog,public AS $actor$
+  SELECT CASE WHEN actor IS NULL OR length(actor)>254 OR actor ~ '[[:cntrl:]]'
+    THEN session_user::text ELSE actor END
+  FROM (SELECT nullif(btrim(current_setting('app.username',true)),'') AS actor) context;
+$actor$;
 
 -- Recursive key-based redaction covers existing account fields and nested future
 -- payloads. Safe control flags remain useful metadata; secret values never do.
