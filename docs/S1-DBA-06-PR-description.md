@@ -6,9 +6,9 @@ action names and current backend integrations.
 
 Closes #48
 
-> **Stacked PR:** target `feat/S1-DBA-05-seed-superadmins-modules-rights` while
-> PR #55 remains open. After it merges, safely synchronize and retarget to main,
-> then recheck that only DBA-06 changes remain in the diff.
+> **Dependency merged:** PR #55 (DBA-05) is merged into `main`. This branch has
+> safely incorporated current main; the PR targets `main`, and its diff contains
+> only DBA-06 migration, tests and documentation.
 
 ## Changes / Implementation Details
 
@@ -39,7 +39,8 @@ historical audit data is rewritten.
 
 ## Testing Notes
 
-On an explicitly isolated PostgreSQL **16.15** Unix-socket hopedb with TCP disabled:
+Final publication checks were rerun after incorporating current main, on a
+fresh private PostgreSQL **16.15** Unix-socket hopedb with TCP disabled:
 
 - **PASS:** unchanged DBA-05 runner, all nine groups, before installing DBA-06.
 - **PASS:** `DBA06_ALLOW_LOCAL_TEST=1 python3 database/tests/run_dba06.py` — actual
@@ -53,7 +54,8 @@ On an explicitly isolated PostgreSQL **16.15** Unix-socket hopedb with TCP disab
 - **PASS:** full auth/password-reset/user/Superadmin/rights/new-context integration
   command — **46 tests, zero failures/skips**. SMTP is a local capture server
   for synthetic fixtures, never external delivery.
-- **PASS:** stacked diff/scope and whitespace checks; roster/old migrations unchanged.
+- **PASS:** **117 unit/form tests**, zero failures/skips.
+- **PASS:** final main-base diff/scope and whitespace checks; roster/old migrations unchanged.
 - **NOT RUN:** Windows PostgreSQL 18.6, real-user mutations, shared/production
   deployment and real invitation generation/delivery.
 
@@ -82,8 +84,19 @@ real invitation artifacts, .env files or unrelated commits in the intended diff.
 
 ## Remaining Limitations / Deferred Tasks
 
-PR #55 merge and base synchronization precede final main targeting. Windows-local
+PR #55 is merged and base synchronization is complete. Windows-local
 verification/deployment requires separate authorization. The audit viewer,
 future-domain trigger attachment, account provisioning and unrelated Developer
 features remain outside this task. No merge/deployment or real invitations have
 been performed for DBA-06.
+
+
+## Windows / Deployment Acceptance Decision
+
+Issue #48 requires verifiable rights-change auditing and actor/time stamps. It
+contains no Windows/PostgreSQL 18.6 requirement or shared-deployment acceptance
+criterion. The approved workflow permits isolated Codespaces verification.
+Windows PostgreSQL 18.6 and shared/production deployment remain **NOT RUN**;
+they are disclosed deployment-verification gates, not unmet mandatory pre-PR
+checks. No Windows results are inferred from Linux tests or the user's DBA-05
+provisioning. This PR does not authorize any database deployment or real invite.
