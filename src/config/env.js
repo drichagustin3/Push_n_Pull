@@ -56,7 +56,15 @@ function readConfig(env) {
       database: databaseEnv.PGDATABASE.trim(),
       user: required('PGUSER'),
       password: required('PGPASSWORD'),
-      ssl: sslMode === 'verify-full' ? { rejectUnauthorized: true } : false,
+      ssl: sslMode === 'verify-full'
+  ? {
+      rejectUnauthorized: true,
+      ca: require('node:fs').readFileSync(
+        path.resolve(__dirname, '../../certs/supabase-ca.crt'),
+        'utf8'
+      ),
+    }
+  : false,
       max: 10,
       connectionTimeoutMillis: 5000,
       idleTimeoutMillis: 30000,
