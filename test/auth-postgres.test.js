@@ -5,7 +5,7 @@ const { randomBytes, createHash } = require('node:crypto');
 const { test } = require('node:test');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-const { createApp } = require('../src/app');
+const { createApp } = require('../src/create-app');
 const { readAuthConfig } = require('../src/auth/config');
 const { startServer } = require('../src/server');
 

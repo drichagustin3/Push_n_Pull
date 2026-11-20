@@ -5,7 +5,7 @@ const { createPool, verifyConnection } = require('./db/pool');
 const { readAuthConfig } = require('./auth/config');
 const { verifyAuthSchema } = require('./auth/service');
 const { readResetConfig } = require('./password-reset/config');
-const { createApp } = require('./app');
+const { createApp } = require('./create-app');
 
 let appPromise;
 

@@ -5,7 +5,7 @@ const { randomBytes, createHash } = require('node:crypto');
 const { before, test } = require('node:test');
 const session = require('express-session');
 const bcrypt = require('bcrypt');
-const { createApp } = require('../src/app');
+const { createApp } = require('../src/create-app');
 const { readAuthConfig } = require('../src/auth/config');
 
 const password = 'ExistingPassword123!';

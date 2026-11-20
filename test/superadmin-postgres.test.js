@@ -5,7 +5,7 @@ const { createServer } = require('node:http');
 const { randomBytes } = require('node:crypto');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-const { createApp } = require('../src/app');
+const { createApp } = require('../src/create-app');
 const { readAuthConfig } = require('../src/auth/config');
 const { LAST_SUPERADMIN_MESSAGE } = require('../src/users/superadmin-guard');
 
