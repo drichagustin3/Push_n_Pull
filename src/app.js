@@ -3,8 +3,11 @@ const path = require('node:path');
 const { registrationRouter } = require('./registration/routes');
 const { createSessionMiddleware } = require('./auth/session');
 const { authRouter } = require('./auth/routes');
+const { resetRouter } = require('./password-reset/routes');
+const { usersRouter } = require('./users/routes');
+const { workspaceRouter } = require('./workspace/routes');
 
-function createApp({ pool, authConfig, sessionStore } = {}) {
+function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions } = {}) {
   const app = express();
   app.disable('x-powered-by');
   if (authConfig) app.set('trust proxy', authConfig.trustProxy);
@@ -22,9 +25,19 @@ function createApp({ pool, authConfig, sessionStore } = {}) {
   app.get('/login', (req, res) => res.sendFile(path.resolve(__dirname, '../public/login.html')));
   app.get('/auth.js', (req, res) => res.sendFile(path.resolve(__dirname, '../public/auth.js')));
   if (authConfig) {
+    app.get('/', (req, res) => res.redirect('/account'));
     const sessions = createSessionMiddleware(pool, authConfig, sessionStore);
     app.locals.closeAuthStore = () => sessions.store.close?.();
     app.use(authRouter(pool, authConfig, sessions.middleware));
+    app.use(usersRouter(pool, authConfig, sessions.middleware));
+    app.use(workspaceRouter(pool, authConfig, sessions.middleware));
+  }
+
+  if (resetConfig && authConfig) {
+    const resets = resetRouter(pool, resetConfig, authConfig, resetOptions);
+    app.locals.closePasswordReset = () => resets.close();
+    app.locals.waitForResetDelivery = () => resets.idle();
+    app.use(resets.router);
   }
 
   app.use(express.static(path.resolve(__dirname, '../public')));

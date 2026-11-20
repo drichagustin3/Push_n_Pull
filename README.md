@@ -96,6 +96,31 @@ contract](docs/S1-DEV-03.md). Before starting the server, configure a private
 `SESSION_SECRET` and exact `APP_ORIGIN`, and install the expected auth schema.
 `npm run db:check` verifies connectivity only; server startup also checks auth columns.
 
+Password recovery is available at `/forgot-password`; see the
+[S1-DEV-04 setup, SMTP configuration, and verification notes](docs/S1-DEV-04.md).
+Server startup also checks the DBA-04 reset-token schema. Configure SMTP for
+production; development without SMTP prints private reset links locally.
+
+Authenticated Admins and Superadmins can open `/users` for account management;
+see the [S1-DEV-05 scope, API contract, and testing notes](docs/S1-DEV-05.md).
+Admins manage Users only. Superadmins can create privileged accounts.
+
+Superadmin approval/rejection, role assignment and guarded soft deletion are now
+implemented in [S1-DEV-06](docs/S1-DEV-06.md), including last-active-Superadmin
+protection on both block routes.
+
+The User Management Rights dialog is implemented in
+[S1-DEV-07](docs/S1-DEV-07.md): eligible accounts have a Rights action for the
+36 grouped permissions, with transactional updates and existing trigger auditing.
+Future business endpoints must explicitly apply the exact-action middleware described below.
+
+The authenticated main workspace is now available at `/account` or `/workspace`;
+the root URL redirects to the real authenticated entry. See
+[S1-DEV-08](docs/S1-DEV-08.md) for navigation/RBAC contracts, role policy, live
+metrics verification and the outstanding DBA business soft-delete dependency.
+Future module links open protected shells; business CRUD and the audit viewer
+remain assigned to later sprints.
+
 ### Configuration
 
 The application loads the repository-root `.env`; existing process environment
