@@ -20,7 +20,7 @@ function poolDouble(query = async () => ({ rows: [{ '?column?': 1 }] })) {
 
 async function reservePort(t) {
   const socket = createServer();
-  socket.listen(0, '127.0.0.1');
+  socket.listen(0);
   await once(socket, 'listening');
   t.after(() => new Promise((resolve) => socket.close(resolve)));
   return socket.address().port;
