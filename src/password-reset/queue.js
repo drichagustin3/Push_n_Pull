@@ -23,6 +23,26 @@ function createDeliveryQueue(logger = console) {
       setImmediate(pump);
       return true;
     },
+        async enqueueAndWait(job) {
+      let resolveCompletion;
+
+      const completion = new Promise((resolve) => {
+        resolveCompletion = resolve;
+      });
+
+      const accepted = this.enqueue(async () => {
+        try {
+          await job();
+        } finally {
+          resolveCompletion(true);
+        }
+      });
+
+      if (!accepted) resolveCompletion(false);
+
+      return completion;
+    },
+
     idle() { return active || pending.length ? new Promise((resolve) => waiters.push(resolve)) : Promise.resolve(); },
     async close() { closing = true; await this.idle(); },
   };

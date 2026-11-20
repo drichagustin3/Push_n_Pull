@@ -65,6 +65,30 @@ test('bounded delivery queue limits concurrency, drains on close, and redacts fa
   await closing;
   assert.equal(peak, 2);
   assert.deepEqual(logs, ['Password reset request processing failed.']);
+});test('enqueueAndWait waits for delivery and reports queue rejection', async () => {
+  const queue = createDeliveryQueue();
+  let finishDelivery;
+  let completed = false;
+
+  const waiting = queue.enqueueAndWait(() => new Promise((resolve) => {
+    finishDelivery = () => {
+      completed = true;
+      resolve();
+    };
+  }));
+
+  await new Promise((resolve) => setImmediate(resolve));
+
+  assert.equal(completed, false);
+  finishDelivery();
+
+  assert.equal(await waiting, true);
+  assert.equal(completed, true);
+
+  await queue.close();
+
+  const rejected = await queue.enqueueAndWait(() => {});
+  assert.equal(rejected, false);
 });
 
 test('reset transaction rolls back password/token changes if session revocation fails', async () => {
