@@ -287,6 +287,36 @@ test('authentication rate limit returns 429 before further credential checks', a
   assert.equal(api.queries.length, 0);
 });
 
+test('authentication rate limit tracks separate Vercel client IPs independently', async (t) => {
+  const previousVercel = process.env.VERCEL;
+  process.env.VERCEL = '1';
+
+  t.after(() => {
+    if (previousVercel === undefined) {
+      delete process.env.VERCEL;
+    } else {
+      process.env.VERCEL = previousVercel;
+    }
+  });
+
+  const api = await serve(t);
+
+  const loginFrom = (ip) => api.request('/api/v1/auth/login', {
+    body: {},
+    headers: { 'x-vercel-forwarded-for': ip },
+  });
+
+  for (let index = 0; index < 20; index += 1) {
+    assert.equal((await loginFrom('203.0.113.10')).status, 400);
+    assert.equal((await loginFrom('198.51.100.20')).status, 400);
+  }
+
+  assert.equal((await loginFrom('203.0.113.10')).status, 429);
+  assert.equal((await loginFrom('198.51.100.20')).status, 429);
+  assert.equal(api.queries.length, 0);
+});
+
+
 test('startup closes the pool when the required auth schema is missing', async () => {
   const { startServer } = require('../src/server');
   let closed = false;
