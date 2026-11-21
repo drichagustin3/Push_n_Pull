@@ -1,5 +1,6 @@
 const { Router } = require('express');
-const { rateLimit } = require('express-rate-limit');
+const { rateLimit, ipKeyGenerator } = require('express-rate-limit');
+const { isIP } = require('node:net');
 const path = require('node:path');
 const { authController } = require('./controller');
 const { requireAuth, requireSession } = require('./middleware');
@@ -11,8 +12,28 @@ function authRouter(pool, config, sessionMiddleware) {
   const controller = authController(pool, config);
   const restricted = requireSession(pool, config, { allowRestricted: true });
   const full = requireAuth(pool, config);
-  const limiter = rateLimit({ windowMs: 15 * 60 * 1000, limit: 20, standardHeaders: 'draft-8', legacyHeaders: false,
-    message: { error: 'rate_limit_exceeded', message: 'Too many authentication attempts. Try again later.' } });
+  const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    limit: 20,
+    standardHeaders: 'draft-8',
+    legacyHeaders: false,
+    keyGenerator: (req) => {
+      const forwardedIp = process.env.VERCEL === '1'
+        ? req.get('x-vercel-forwarded-for')
+        : null;
+
+      const candidate = forwardedIp?.split(',')[0].trim();
+      const clientIp = candidate && isIP(candidate)
+        ? candidate
+        : req.socket.remoteAddress;
+
+      return ipKeyGenerator(clientIp);
+        },
+    message: {
+      error: 'rate_limit_exceeded',
+      message: 'Too many authentication attempts. Try again later.',
+    },
+  });
   const postGuard = (req, res, next) => {
     if (req.get('origin') !== config.origin) return res.status(403).json({ error: 'invalid_origin', message: 'Request origin is not allowed.' });
     if (config.secure && !req.secure) return res.status(400).json({ error: 'https_required', message: 'A secure HTTPS connection is required.' });

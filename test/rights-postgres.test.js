@@ -5,7 +5,7 @@ const { once } = require('node:events');
 const { randomBytes } = require('node:crypto');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
-const { createApp } = require('../src/app');
+const { createApp } = require('../src/create-app');
 const { readAuthConfig } = require('../src/auth/config');
 
 test('Rights API and audit atomicity over real HTTP/PostgreSQL', {

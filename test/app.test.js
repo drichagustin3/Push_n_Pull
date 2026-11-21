@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const { createServer } = require('node:http');
 const { once } = require('node:events');
 const { test } = require('node:test');
-const { createApp } = require('../src/app');
+const { createApp } = require('../src/create-app');
 
 async function serve(t) {
   const server = createServer(createApp());

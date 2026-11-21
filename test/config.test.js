@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const { spawnSync } = require('node:child_process');
-const { mkdtempSync, writeFileSync, rmSync } = require('node:fs');
+const { mkdtempSync, writeFileSync, rmSync, readFileSync } = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { test } = require('node:test');
@@ -34,7 +34,13 @@ test('config accepts explicit environment values and certificate-verified TLS', 
   assert.equal(config.database.port, 5433);
   assert.equal(config.database.database, 'hopedb_test');
   assert.equal(config.database.host, 'db.example.test');
-  assert.deepEqual(config.database.ssl, { rejectUnauthorized: true });
+  assert.deepEqual(config.database.ssl, {
+  rejectUnauthorized: true,
+  ca: readFileSync(
+    path.resolve(__dirname, '../certs/supabase-ca.crt'),
+    'utf8'
+  ),
+});
 });
 
 for (const name of ['PGUSER', 'PGPASSWORD']) {

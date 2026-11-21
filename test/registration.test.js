@@ -3,7 +3,7 @@ const { once } = require('node:events');
 const { createServer } = require('node:http');
 const { test } = require('node:test');
 const bcrypt = require('bcrypt');
-const { createApp } = require('../src/app');
+const { createApp } = require('../src/create-app');
 const { validateRegistration } = require('../src/registration/validation');
 
 const valid = {

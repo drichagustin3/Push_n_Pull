@@ -1,5 +1,5 @@
 const { createServer } = require('node:http');
-const { createApp } = require('./app');
+const { createApp } = require('./create-app');
 const { ConfigurationError, loadConfig } = require('./config/env');
 const { createPool, verifyConnection } = require('./db/pool');
 const { readAuthConfig } = require('./auth/config');
