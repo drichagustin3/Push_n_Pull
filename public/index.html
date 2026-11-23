@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hope, Inc. ERP — Run your entire business with confidence</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* =========================================================================
+       OPTION 3 DESIGN TOKENS: Warm Sand (#FAF7F2), Deep Espresso (#2C1E19)
+       & Deep Teal Accent (#0F766E / Hover #115E59)
+       ========================================================================= */
+    :root {
+      --bg-sand: #FAF7F2;
+      --bg-card: #FFFFFF;
+      --bg-soft: #F3EEE5;
+      --border-sand: #E6DFD3;
+      --text-espresso: #2C1E19;
+      --text-umber: #5C4942;
+      --text-muted: #7C6860;
+      --teal-primary: #0F766E;
+      --teal-hover: #115E59;
+      --teal-tint: #CCFBF1;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg-sand);
+      color: var(--text-espresso);
+    }
+
+    .erp-card {
+      background-color: var(--bg-card);
+      border-color: var(--border-sand);
+    }
+
+    .erp-soft-panel {
+      background-color: var(--bg-soft);
+      border-color: var(--border-sand);
+    }
+
+    .btn-teal-primary {
+      background-color: var(--teal-primary);
+      color: #FFFFFF;
+      transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-teal-primary:hover {
+      background-color: var(--teal-hover);
+    }
+
+    .btn-teal-primary:active {
+      transform: scale(0.99);
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased overflow-x-hidden flex flex-col">
+
+  <!-- Toast Banner (Accessible non-blocking status feedback, never alert()) -->
+  <div
+    id="toastBanner"
+    role="status"
+    aria-live="polite"
+    class="fixed bottom-5 right-5 z-50 hidden max-w-sm w-full rounded-xl border border-[var(--border-sand)] bg-[var(--bg-card)] p-4 shadow-xl transition-all duration-200"
+  >
+    <div class="flex items-start gap-3">
+      <span id="toastDot" class="mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full bg-[var(--teal-primary)]"></span>
+      <div class="min-w-0 flex-1">
+        <p id="toastTitle" class="text-sm font-bold text-[var(--text-espresso)]">Status Update</p>
+        <p id="toastBody" class="mt-0.5 text-xs leading-relaxed text-[var(--text-umber)]">Action completed.</p>
+      </div>
+      <button
+        type="button"
+        onclick="hideToast()"
+        aria-label="Close notification"
+        class="rounded-lg p-1 text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-espresso)] cursor-pointer"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- TOP NAVIGATION BAR (Figure 2 Header)                                  -->
+  <!-- ===================================================================== -->
+  <header class="sticky top-0 z-30 border-b border-[var(--border-sand)] bg-[#FAF7F2]/95 backdrop-blur-md">
+    <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+      <!-- Brand Logo & Identity -->
+      <a href="#top" class="flex items-center gap-3 group focus:outline-none">
+        <div class="btn-teal-primary flex h-9 w-9 items-center justify-center rounded-xl text-base font-extrabold shadow-sm group-hover:scale-105 transition-transform">
+          H
+        </div>
+        <div class="flex items-baseline gap-2">
+          <span class="text-lg font-extrabold tracking-tight text-[var(--text-espresso)]">Hope, Inc. ERP</span>
+          </span>
+        </div>
+      </a>
+
+      <!-- Right Navigation Actions -->
+      <nav aria-label="Primary actions" class="flex items-center gap-2 sm:gap-3">
+        <button
+          type="button"
+          onclick="openModal('loginModal')"
+          class="rounded-xl px-3.5 py-2 text-sm font-semibold text-[var(--text-espresso)] hover:bg-[var(--bg-soft)] transition-colors cursor-pointer"
+        >
+          Sign In
+        </button>
+        <button
+          type="button"
+          onclick="openModal('registerModal')"
+          class="btn-teal-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-sm cursor-pointer"
+        >
+          Register
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <!-- MAIN CONTENT                                                          -->
+  <!-- ===================================================================== -->
+  <main id="top" class="flex-1">
+    <!-- Hero Section: Two-Column Asymmetric Split (Student Guide Figure 2) -->
+    <section class="mx-auto max-w-7xl px-4 pt-10 pb-14 sm:px-6 sm:pt-14 sm:pb-20 lg:px-8 lg:pt-16">
+      <div class="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-10">
+
+        <!-- Left Column: Value Proposition & Primary/Secondary CTAs -->
+        <div class="lg:col-span-6 text-left">
+
+          <h1 class="text-4xl font-extrabold tracking-tight text-[var(--text-espresso)] sm:text-5xl lg:text-[3.35rem] lg:leading-[1.12]">
+            Run your entire business
+            <span class="block mt-1 text-[var(--teal-primary)]">with confidence</span>
+          </h1>
+
+          <p class="mt-5 max-w-xl text-base leading-relaxed text-[var(--text-umber)] sm:text-lg">
+            Hope, Inc. ERP connects Customer Accounts, Product Catalogs, Human Resources, and Sales into one structured workspace backed by role-based permissions and full audit trails.
+          </p>
+
+          <!-- Primary & Secondary CTA Buttons -->
+          <div class="mt-8 flex flex-wrap items-center gap-3.5">
+            <button
+              type="button"
+              onclick="openModal('loginModal')"
+              class="btn-teal-primary rounded-xl px-6 py-3.5 text-sm font-semibold shadow-md cursor-pointer"
+            >
+              Sign In to Dashboard
+            </button>
+            <button
+              type="button"
+              onclick="openModal('registerModal')"
+              class="erp-card rounded-xl border px-6 py-3.5 text-sm font-semibold text-[var(--text-espresso)] hover:bg-[var(--bg-soft)] transition-colors cursor-pointer"
+            >
+              Register Account
+            </button>
+          </div>
+
+          <!-- Account Lifecycle Policy Note -->
+          <p class="mt-5 text-xs leading-relaxed text-[var(--text-muted)]">
+            New self-registered accounts start with the <strong class="font-semibold text-[var(--text-espresso)]">User</strong> role and <strong class="font-semibold text-[var(--text-espresso)]">Pending</strong> status until approved by an administrator.
+          </p>
+        </div>
+
+        <!-- Right Column: ERP Overview & Account Status Preview Card -->
+        <div class="lg:col-span-6">
+          <div class="erp-card relative overflow-hidden rounded-2xl border shadow-xl">
+            <!-- Browser / Workspace Header Bar -->
+            <div class="erp-soft-panel flex items-center justify-between border-b px-4 py-3 sm:px-5">
+              <div class="flex items-center gap-2">
+                <span class="h-2.5 w-2.5 rounded-full bg-[#C26D53]"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-[#D99B26]"></span>
+                <span class="h-2.5 w-2.5 rounded-full bg-[var(--teal-primary)]"></span>
+                <span class="ml-2 text-xs font-bold tracking-wide text-[var(--text-espresso)]">
+                  Hope, Inc. ERP &mdash; Operations &amp; Access Snapshot
+                </span>
+              </div>
+              <span class="rounded-full bg-[var(--teal-tint)] px-2.5 py-0.5 text-[11px] font-bold text-[var(--teal-primary)]">
+              </span>
+            </div>
+
+            <div class="p-5 sm:p-6 space-y-5">
+              <!-- KPI Overview Row -->
+              <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <div class="erp-soft-panel rounded-xl border p-3">
+                  <p class="text-[11px] font-semibold text-[var(--text-muted)]">Customers</p>
+                  <p class="mt-1 text-lg font-extrabold text-[var(--text-espresso)]">148</p>
+                  <p class="text-[10px] font-semibold text-[var(--teal-primary)]">Active accounts</p>
+                </div>
+                <div class="erp-soft-panel rounded-xl border p-3">
+                  <p class="text-[11px] font-semibold text-[var(--text-muted)]">Products</p>
+                  <p class="mt-1 text-lg font-extrabold text-[var(--text-espresso)]">312</p>
+                  <p class="text-[10px] font-medium text-[var(--text-umber)]">Price-tracked</p>
+                </div>
+                <div class="erp-soft-panel rounded-xl border p-3">
+                  <p class="text-[11px] font-semibold text-[var(--text-muted)]">Staff / HR</p>
+                  <p class="mt-1 text-lg font-extrabold text-[var(--text-espresso)]">64</p>
+                  <p class="text-[10px] font-medium text-[var(--text-umber)]">4 departments</p>
+                </div>
+                <div class="erp-soft-panel rounded-xl border p-3">
+                  <p class="text-[11px] font-semibold text-[var(--text-muted)]">Monthly Sales</p>
+                  <p class="mt-1 text-lg font-extrabold text-[var(--teal-primary)]">&#8369;842k</p>
+                  <p class="text-[10px] font-medium text-[var(--text-umber)]">Audited orders</p>
+                </div>
+              </div>
+
+              <!-- 2x2 Interactive Core Module Tiles -->
+              <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onclick="selectModule('customers')"
+                  class="erp-soft-panel group flex items-start gap-3 rounded-xl border p-3.5 text-left hover:border-[var(--teal-primary)] transition-all cursor-pointer"
+                >
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--teal-tint)] text-[var(--teal-primary)] group-hover:bg-[var(--teal-primary)] group-hover:text-white transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[var(--text-espresso)]">Customers</p>
+                    <p class="mt-0.5 text-[11px] text-[var(--text-umber)]">Billing profiles &amp; terms</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="selectModule('products')"
+                  class="erp-soft-panel group flex items-start gap-3 rounded-xl border p-3.5 text-left hover:border-[var(--teal-primary)] transition-all cursor-pointer"
+                >
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--teal-tint)] text-[var(--teal-primary)] group-hover:bg-[var(--teal-primary)] group-hover:text-white transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[var(--text-espresso)]">Products</p>
+                    <p class="mt-0.5 text-[11px] text-[var(--text-umber)]">Catalog &amp; price history</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="selectModule('hr')"
+                  class="erp-soft-panel group flex items-start gap-3 rounded-xl border p-3.5 text-left hover:border-[var(--teal-primary)] transition-all cursor-pointer"
+                >
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--teal-tint)] text-[var(--teal-primary)] group-hover:bg-[var(--teal-primary)] group-hover:text-white transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[var(--text-espresso)]">Human Resources</p>
+                    <p class="mt-0.5 text-[11px] text-[var(--text-umber)]">Staff &amp; job history</p>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onclick="selectModule('sales')"
+                  class="erp-soft-panel group flex items-start gap-3 rounded-xl border p-3.5 text-left hover:border-[var(--teal-primary)] transition-all cursor-pointer"
+                >
+                  <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-[var(--teal-tint)] text-[var(--teal-primary)] group-hover:bg-[var(--teal-primary)] group-hover:text-white transition-colors">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-[var(--text-espresso)]">Sales &amp; Reports</p>
+                    <p class="mt-0.5 text-[11px] text-[var(--text-umber)]">Orders &amp; role reports</p>
+                  </div>
+                </button>
+              </div>
+
+              <!-- User & Role Status Badges (Active, Pending, Blocked, Archived) -->
+              <div class="border-t border-[var(--border-sand)] pt-4">
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                  <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">
+                    User Account Statuses
+                  </span>
+                  <span class="text-[11px] font-medium text-[var(--text-umber)]">Role-scoped visibility</span>
+                </div>
+                <div class="mt-2.5 flex flex-wrap items-center gap-2">
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[#CCFBF1] px-3 py-1 text-xs font-bold text-[#0F766E]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#0F766E]"></span>
+                    Active
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3C7] px-3 py-1 text-xs font-bold text-[#92400E]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#D97706]"></span>
+                    Pending
+                  </span>
+                  <span class="inline-flex items-center gap-1.5 rounded-full bg-[#FEE2E2] px-3 py-1 text-xs font-bold text-[#991B1B]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[#DC2626]"></span>
+                    Blocked
+                  </span>
+                  <span class="erp-soft-panel inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold text-[var(--text-umber)]">
+                    <span class="h-1.5 w-1.5 rounded-full bg-[var(--text-umber)]"></span>
+                    Inactive
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULE 1: AUTHENTICATION & ROLE-BASED ACCESS SECTION                  -->
+    <!-- ===================================================================== -->
+    <section id="module-1" class="erp-card border-t py-14 sm:py-18">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-2xl text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-[var(--teal-primary)]">
+            Module 1 &bull; Authentication &amp; Role-Based Access
+          </p>
+          <h2 class="mt-2 text-2xl font-extrabold tracking-tight text-[var(--text-espresso)] sm:text-3xl">
+            Everything you need to grow with controlled access
+          </h2>
+          <p class="mt-3 text-sm leading-relaxed text-[var(--text-umber)] sm:text-base">
+            Three defined roles enforce strict boundaries across user management, account lifecycle states, and operational modules.
+          </p>
+        </div>
+
+        <!-- Interactive Module Tab Selector -->
+        <div class="erp-soft-panel mx-auto mt-10 max-w-4xl rounded-2xl border p-5 sm:p-7">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border-sand)] pb-4">
+            <div class="flex flex-wrap gap-2" role="tablist" aria-label="ERP Core Modules">
+              <button type="button" data-module="customers" onclick="selectModule('customers')" class="mod-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold cursor-pointer">
+                Customers
+              </button>
+              <button type="button" data-module="products" onclick="selectModule('products')" class="mod-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold cursor-pointer">
+                Products
+              </button>
+              <button type="button" data-module="hr" onclick="selectModule('hr')" class="mod-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold cursor-pointer">
+                Human Resources
+              </button>
+              <button type="button" data-module="sales" onclick="selectModule('sales')" class="mod-btn rounded-xl px-3.5 py-1.5 text-xs font-semibold cursor-pointer">
+                Sales
+              </button>
+            </div>
+            <span id="modSchemaTag" class="rounded-lg bg-[var(--teal-tint)] px-2.5 py-1 font-mono text-xs font-bold text-[var(--teal-primary)]">
+              CUSTOMER
+            </span>
+          </div>
+
+          <div class="mt-5 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div class="md:col-span-2">
+              <h3 id="modTitle" class="text-lg font-bold text-[var(--text-espresso)]">Customer Management</h3>
+              <p id="modDesc" class="mt-2 text-sm leading-relaxed text-[var(--text-umber)]">
+                Maintain customer records, billing details, and payment terms with soft-deletion support and audit stamps so historical transactions stay intact.
+              </p>
+            </div>
+            <div class="erp-card rounded-xl border p-4">
+              <p class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Core Permissions</p>
+              <ul id="modPerms" class="mt-2.5 space-y-1.5 text-xs font-semibold text-[var(--text-espresso)]">
+                <li>&bull; Create &amp; update customer entries</li>
+                <li>&bull; Soft-delete &amp; restore records</li>
+                <li>&bull; Respect role &amp; audit visibility</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Three Role Cards: Superadmin, Admin, User -->
+        <div class="mt-10 grid grid-cols-1 gap-6 md:grid-cols-3">
+          <!-- Superadmin Card -->
+          <article class="erp-soft-panel rounded-2xl border p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="erp-card inline-flex items-center rounded-lg border px-3 py-1 text-xs font-semibold text-[var(--text-espresso)]">
+                 Superadmin
+                </span>
+                <span class="rounded-full bg-[#CCFBF1] px-2.5 py-0.5 text-[11px] font-bold text-[#0F766E]">
+                  Active
+                </span>
+              </div>
+              <h3 class="mt-4 text-lg font-bold text-[var(--text-espresso)]">Full System Oversight</h3>
+              <p class="mt-2 text-xs leading-relaxed text-[var(--text-umber)] sm:text-sm">
+                Manages all modules, role assignments, and system settings. Views active and soft-deleted records, audit timestamps, and every account status (Pending, Active, Blocked, Archived).
+              </p>
+            </div>
+            <div class="mt-5 border-t border-[var(--border-sand)] pt-3 text-xs font-semibold text-[var(--text-umber)]">
+              Full CRUD &bull; Audit Stamps &bull; Role Control
+            </div>
+          </article>
+
+          <!-- Admin Card -->
+          <article class="erp-soft-panel rounded-2xl border p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="erp-card rounded-lg border px-3 py-1 text-xs font-bold tracking-wide text-[var(--text-espresso)]">
+                  Admin
+                </span>
+                <span class="rounded-full bg-[#FEF3C7] px-2.5 py-0.5 text-[11px] font-bold text-[#92400E]">
+                  Approvals &amp; Moderation
+                </span>
+              </div>
+              <h3 class="mt-4 text-lg font-bold text-[var(--text-espresso)]">User &amp; Operations Governance</h3>
+              <p class="mt-2 text-xs leading-relaxed text-[var(--text-umber)] sm:text-sm">
+                Approves pending registrations, blocks or unblocks users, restores archived/deleted items, and assigns scoped rights. Superadmin accounts remain hidden and peer Admins remain read-only.
+              </p>
+            </div>
+            <div class="mt-5 border-t border-[var(--border-sand)] pt-3 text-xs font-semibold text-[var(--text-umber)]">
+              Approve Pending &bull; Block/Unblock &bull; Restore
+            </div>
+          </article>
+
+          <!-- User Card -->
+          <article class="erp-soft-panel rounded-2xl border p-6 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between gap-2">
+                <span class="erp-card rounded-lg border px-3 py-1 text-xs font-bold tracking-wide text-[var(--text-espresso)]">
+                  User
+                </span>
+                <span class="erp-card rounded-full border px-2.5 py-0.5 text-[11px] font-bold text-[var(--text-umber)]">
+                  Default Self-Signup Role
+                </span>
+              </div>
+              <h3 class="mt-4 text-lg font-bold text-[var(--text-espresso)]">Permission-Scoped Workspace</h3>
+              <p class="mt-2 text-xs leading-relaxed text-[var(--text-umber)] sm:text-sm">
+                Assigned automatically upon registration (starting as Pending until approved). Works strictly within granted module permissions on active records without internal audit or status columns.
+              </p>
+            </div>
+            <div class="mt-5 border-t border-[var(--border-sand)] pt-3 text-xs font-semibold text-[var(--text-umber)]">
+              Granted Rights Only &bull; Active Records
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===================================================================== -->
+  <!-- FOOTER                                                                -->
+  <!-- ===================================================================== -->
+  <footer class="border-t border-[var(--border-sand)] bg-[#2C1E19] py-7 text-[#FAF7F2]">
+    <div class="flex flex-wrap items-center gap-4">
+        <button type="button" onclick="openModal('registerModal')" class="hover:text-white transition-colors cursor-pointer">
+        </button>
+        <span class="text-[#FAF7F2]/30">|</span>
+        <span>&copy; 2026 Hope, Inc.</span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 1: SIGN IN                                                      -->
+  <!-- ===================================================================== -->
+  <div
+    id="loginModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="loginModalTitle"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-[#2C1E19]/60 p-4 backdrop-blur-xs"
+  >
+    <div class="erp-card relative w-full max-w-md rounded-2xl border p-6 shadow-2xl sm:p-8">
+      <button
+        type="button"
+        onclick="closeModal('loginModal')"
+        aria-label="Close Sign In modal"
+        class="absolute top-4 right-4 rounded-lg p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-espresso)] cursor-pointer"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <div class="flex items-center gap-2.5">
+        <span class="btn-teal-primary flex h-8 w-8 items-center justify-center rounded-lg text-sm font-extrabold">H</span>
+        <span class="text-sm font-bold text-[var(--text-espresso)]">Hope, Inc. ERP</span>
+      </div>
+
+      <h2 id="loginModalTitle" class="mt-4 text-2xl font-extrabold text-[var(--text-espresso)]">Sign In</h2>
+      <p class="mt-1 text-sm text-[var(--text-umber)]">Access your role-scoped ERP workspace</p>
+
+      <!-- Quick Persona Fill Buttons for QA Testing -->
+      <div class="erp-soft-panel mt-4 rounded-xl border p-3">
+        <p class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Quick Test Credentials</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">
+          <button
+            type="button"
+            onclick="fillLogin('superadmin@hope-erp.com', 'HopeSuper#2026')"
+            class="erp-card rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--text-espresso)] hover:border-[var(--teal-primary)] cursor-pointer"
+          >
+            Superadmin
+          </button>
+          <button
+            type="button"
+            onclick="fillLogin('admin@hope-erp.com', 'HopeAdmin#2026')"
+            class="erp-card rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--text-espresso)] hover:border-[var(--teal-primary)] cursor-pointer"
+          >
+            Admin
+          </button>
+          <button
+            type="button"
+            onclick="fillLogin('user@hope-erp.com', 'HopeUser#2026')"
+            class="erp-card rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--text-espresso)] hover:border-[var(--teal-primary)] cursor-pointer"
+          >
+            User
+          </button>
+        </div>
+      </div>
+
+      <form onsubmit="handleLogin(event)" class="mt-4 space-y-4">
+        <div>
+          <label for="loginEmail" class="block text-xs font-bold text-[var(--text-espresso)]">Email address</label>
+          <input
+            id="loginEmail"
+            type="email"
+            required
+            placeholder="name@hope-erp.com"
+            class="erp-card mt-1.5 w-full rounded-xl border px-3.5 py-2.5 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+          />
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between">
+            <label for="loginPassword" class="block text-xs font-bold text-[var(--text-espresso)]">Password</label>
+            <button
+              type="button"
+              onclick="switchModal('loginModal', 'resetModal')"
+              class="text-xs font-semibold text-[var(--teal-primary)] hover:underline cursor-pointer"
+            >
+              Reset password?
+            </button>
+          </div>
+          <input
+            id="loginPassword"
+            type="password"
+            required
+            placeholder="••••••••••••"
+            class="erp-card mt-1.5 w-full rounded-xl border px-3.5 py-2.5 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+          />
+        </div>
+
+        <button type="submit" class="btn-teal-primary w-full rounded-xl py-2.5 text-sm font-semibold shadow-sm cursor-pointer">
+          Sign In
+        </button>
+      </form>
+
+      <p class="mt-5 text-center text-xs text-[var(--text-umber)]">
+        Need an account?
+        <button
+          type="button"
+          onclick="switchModal('loginModal', 'registerModal')"
+          class="font-bold text-[var(--teal-primary)] hover:underline cursor-pointer"
+        >
+          Register here
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 2: REGISTER                                                     -->
+  <!-- ===================================================================== -->
+  <div
+    id="registerModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="registerModalTitle"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-[#2C1E19]/60 p-4 backdrop-blur-xs"
+  >
+    <div class="erp-card relative w-full max-w-md rounded-2xl border p-6 shadow-2xl sm:p-8">
+      <button
+        type="button"
+        onclick="closeModal('registerModal')"
+        aria-label="Close Register modal"
+        class="absolute top-4 right-4 rounded-lg p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-espresso)] cursor-pointer"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <h2 id="registerModalTitle" class="text-2xl font-extrabold text-[var(--text-espresso)]">Create Account</h2>
+      <p class="mt-1 text-sm text-[var(--text-umber)]">Register for Hope, Inc. ERP access</p>
+
+      <div class="mt-3.5 rounded-xl bg-[var(--teal-tint)] px-3.5 py-2.5 text-xs font-medium leading-relaxed text-[var(--teal-primary)]">
+        Self-registration assigns the <strong>User</strong> role with <strong>Pending</strong> status until an Admin or Superadmin approves your account.
+      </div>
+
+      <form onsubmit="handleRegister(event)" class="mt-4 space-y-3.5">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div>
+            <label for="regFirst" class="block text-xs font-bold text-[var(--text-espresso)]">First name</label>
+            <input
+              id="regFirst"
+              type="text"
+              required
+              placeholder="Alex"
+              class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+            />
+          </div>
+          <div>
+            <label for="regLast" class="block text-xs font-bold text-[var(--text-espresso)]">Last name</label>
+            <input
+              id="regLast"
+              type="text"
+              required
+              placeholder="Rivera"
+              class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label for="regEmail" class="block text-xs font-bold text-[var(--text-espresso)]">Work email</label>
+          <input
+            id="regEmail"
+            type="email"
+            required
+            placeholder="arivera@hope-erp.com"
+            class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+          />
+        </div>
+
+        <div>
+          <label for="regPassword" class="block text-xs font-bold text-[var(--text-espresso)]">Password</label>
+          <input
+            id="regPassword"
+            type="password"
+            required
+            minlength="8"
+            placeholder="Minimum 8 characters"
+            class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+          />
+        </div>
+
+        <button type="submit" class="btn-teal-primary w-full rounded-xl py-2.5 text-sm font-semibold shadow-sm cursor-pointer">
+          Register
+        </button>
+      </form>
+
+      <p class="mt-4 text-center text-xs text-[var(--text-umber)]">
+        Already registered?
+        <button
+          type="button"
+          onclick="switchModal('registerModal', 'loginModal')"
+          class="font-bold text-[var(--teal-primary)] hover:underline cursor-pointer"
+        >
+          Sign In
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- MODAL 3: RESET PASSWORD                                               -->
+  <!-- ===================================================================== -->
+  <div
+    id="resetModal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="resetModalTitle"
+    class="fixed inset-0 z-40 hidden items-center justify-center bg-[#2C1E19]/60 p-4 backdrop-blur-xs"
+  >
+    <div class="erp-card relative w-full max-w-md rounded-2xl border p-6 shadow-2xl sm:p-8">
+      <button
+        type="button"
+        onclick="closeModal('resetModal')"
+        aria-label="Close Reset Password modal"
+        class="absolute top-4 right-4 rounded-lg p-1.5 text-[var(--text-muted)] hover:bg-[var(--bg-soft)] hover:text-[var(--text-espresso)] cursor-pointer"
+      >
+        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <h2 id="resetModalTitle" class="text-2xl font-extrabold text-[var(--text-espresso)]">Reset Password</h2>
+      <p class="mt-1 text-sm text-[var(--text-umber)]">Enter your account email to receive password recovery instructions</p>
+
+      <form onsubmit="handleReset(event)" class="mt-5 space-y-4">
+        <div>
+          <label for="resetEmail" class="block text-xs font-bold text-[var(--text-espresso)]">Email address</label>
+          <input
+            id="resetEmail"
+            type="email"
+            required
+            placeholder="name@hope-erp.com"
+            class="erp-card mt-1.5 w-full rounded-xl border px-3.5 py-2.5 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+          />
+        </div>
+
+        <button type="submit" class="btn-teal-primary w-full rounded-xl py-2.5 text-sm font-semibold shadow-sm cursor-pointer">
+          Send Reset Link
+        </button>
+      </form>
+
+      <p class="mt-5 text-center text-xs text-[var(--text-umber)]">
+        Remembered your password?
+        <button
+          type="button"
+          onclick="switchModal('resetModal', 'loginModal')"
+          class="font-bold text-[var(--teal-primary)] hover:underline cursor-pointer"
+        >
+          Back to Sign In
+        </button>
+      </p>
+    </div>
+  </div>
+
+  <!-- ===================================================================== -->
+  <!-- CLIENT-SIDE INTERACTIVITY                                             -->
+  <!-- ===================================================================== -->
+  <script>
+    const modules = {
+      customers: {
+        schema: 'CUSTOMER',
+        title: 'Customer Management',
+        desc: 'Maintain customer records, billing details, and payment terms with soft-deletion support and audit stamps so historical transactions stay intact.',
+        perms: [
+          'Create & update customer entries',
+          'Soft-delete & restore records',
+          'Respect role & audit visibility',
+        ],
+      },
+      products: {
+        schema: 'PRODUCT & PRICEHIST',
+        title: 'Products & Price History',
+        desc: 'Organize catalog items and effective-dated price history so sales lines reference accurate historical unit pricing.',
+        perms: [
+          'Manage catalog items & SKUs',
+          'Track effective price history',
+          'View active vs. archived items',
+        ],
+      },
+      hr: {
+        schema: 'EMPLOYEE & JOBHISTORY',
+        title: 'Human Resources & Job History',
+        desc: 'Track employees, departments, roles, and job history transitions while safeguarding sensitive employee records.',
+        perms: [
+          'Manage employee & role assignments',
+          'Maintain job history logs',
+          'Enforce role-scoped access',
+        ],
+      },
+      sales: {
+        schema: 'SALES & SALESDETAIL',
+        title: 'Sales Orders & Role Reports',
+        desc: 'Record sales headers and line items with automatic totals and role-scoped reporting for operational review.',
+        perms: [
+          'Create & review sales headers/lines',
+          'Generate role-filtered reports',
+          'Preserve audit trail integrity',
+        ],
+      },
+    };
+
+    let currentModule = 'customers';
+    let toastTimer = null;
+
+    function selectModule(key) {
+      const data = modules[key];
+      if (!data) return;
+      currentModule = key;
+
+      document.getElementById('modSchemaTag').textContent = data.schema;
+      document.getElementById('modTitle').textContent = data.title;
+      document.getElementById('modDesc').textContent = data.desc;
+      document.getElementById('modPerms').innerHTML = data.perms
+        .map((item) => `<li class="flex items-center gap-2"><span class="text-[var(--teal-primary)] font-extrabold">&#10003;</span><span>${item}</span></li>`)
+        .join('');
+
+      document.querySelectorAll('.mod-btn').forEach((btn) => {
+        const isActive = btn.dataset.module === key;
+        btn.className = isActive
+          ? 'mod-btn btn-teal-primary rounded-xl px-3.5 py-1.5 text-xs font-semibold shadow-2xs cursor-pointer'
+          : 'mod-btn erp-card rounded-xl border px-3.5 py-1.5 text-xs font-semibold text-[var(--text-umber)] hover:text-[var(--text-espresso)] cursor-pointer';
+      });
+    }
+
+    function openModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    }
+
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+
+    function switchModal(closeId, openId) {
+      closeModal(closeId);
+      openModal(openId);
+    }
+
+    function fillLogin(email, password) {
+      document.getElementById('loginEmail').value = email;
+      document.getElementById('loginPassword').value = password;
+    }
+
+    function showToast(title, message, dotColor = '#0F766E') {
+      const banner = document.getElementById('toastBanner');
+      document.getElementById('toastTitle').textContent = title;
+      document.getElementById('toastBody').textContent = message;
+      document.getElementById('toastDot').style.backgroundColor = dotColor;
+
+      banner.classList.remove('hidden');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(hideToast, 4500);
+    }
+
+    function hideToast() {
+      const banner = document.getElementById('toastBanner');
+      if (banner) banner.classList.add('hidden');
+    }
+
+    function handleLogin(event) {
+      event.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
+
+      if (email.startsWith('pending')) {
+        showToast('Sign In Blocked — Pending Status', 'This account is awaiting administrator approval.', '#D97706');
+        return;
+      }
+      if (email.startsWith('blocked')) {
+        showToast('Sign In Denied — Blocked Status', 'This account is currently blocked.', '#DC2626');
+        return;
+      }
+
+      const role = email.startsWith('superadmin')
+        ? 'Superadmin'
+        : email.startsWith('admin')
+        ? 'Admin'
+        : 'User';
+
+      closeModal('loginModal');
+      showToast(`Signed In (${role})`, `Authenticated preview session for ${email}.`, '#0F766E');
+    }
+
+    function handleRegister(event) {
+      event.preventDefault();
+      const first = document.getElementById('regFirst').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      closeModal('registerModal');
+      event.target.reset();
+      showToast(
+        'Registration Submitted (Pending)',
+        `${first} (${email}) registered with default role User and status Pending.`,
+        '#0F766E'
+      );
+    }
+
+    function handleReset(event) {
+      event.preventDefault();
+      const email = document.getElementById('resetEmail').value.trim();
+      closeModal('resetModal');
+      event.target.reset();
+      showToast('Password Reset Requested', `Recovery instructions prepared for ${email}.`, '#0F766E');
+    }
+
+    ['loginModal', 'registerModal', 'resetModal'].forEach((id) => {
+      const modal = document.getElementById(id);
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) closeModal(id);
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        ['loginModal', 'registerModal', 'resetModal'].forEach(closeModal);
+      }
+    });
+
+    // Initialize default module view
+    selectModule(currentModule);
+  </script>
+</body>
+</html>
