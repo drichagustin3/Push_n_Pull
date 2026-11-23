@@ -25,7 +25,9 @@ function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions }
   app.get('/login', (req, res) => res.sendFile(path.resolve(__dirname, '../public/login.html')));
   app.get('/auth.js', (req, res) => res.sendFile(path.resolve(__dirname, '../public/auth.js')));
   if (authConfig) {
-    app.get('/', (req, res) => res.redirect('/account'));
+    app.get('/', (req, res) => {
+  res.sendFile(path.resolve(__dirname, '../public/index.html'));
+});
     const sessions = createSessionMiddleware(pool, authConfig, sessionStore);
     app.locals.closeAuthStore = () => sessions.store.close?.();
     app.use(authRouter(pool, authConfig, sessions.middleware));
