@@ -16,3 +16,9 @@
 .customer-inactive { background: #f3eee5; }
 .customer-note { color: #62554d; font-size: .9rem; }
 #customerList [hidden] { display: none; }
+
+#customerEditor { width: min(30rem, calc(100vw - 4rem)); border: 1px solid #7c7168; border-radius: .7rem; padding: 1.5rem; color: #2c1e19; }
+#customerEditor::backdrop { background: #0f172a99; }
+#customerForm label { display: flex; flex-direction: column; gap: .4rem; margin: 1rem 0; }
+#customerForm input, #customerForm select { padding: .65rem; font: inherit; border: 1px solid #7c7168; border-radius: .35rem; min-width: 0; }
+#customerFormError { color: #991b1b; }

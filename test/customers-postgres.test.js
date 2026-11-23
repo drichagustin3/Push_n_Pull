@@ -91,9 +91,10 @@ test('Customer list on isolated PostgreSQL with real login, sessions and RBAC', 
     assert.equal((await request('/api/customers', cookies.user)).status, 403);
     assert.equal((await request('/api/customers', cookies.admin)).status, 200);
   });
-  await t.test('reads preserve all customer data and application never exposes new mutations', async () => {
+  await t.test('list reads preserve customer data; unsupported collection mutations stay rejected', async () => {
     const before = JSON.stringify((await pool.query('SELECT * FROM customer ORDER BY custno')).rows);
-    for (const method of ['POST', 'PUT', 'DELETE']) {
+    // DEV-02 now owns POST; collection PUT and DELETE remain unsupported.
+    for (const method of ['PUT', 'DELETE']) {
       const result = await request('/api/customers', cookies.admin, { method }); assert.equal(result.status, 404);
     }
     assert.equal(JSON.stringify((await pool.query('SELECT * FROM customer ORDER BY custno')).rows), before);

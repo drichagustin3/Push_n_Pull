@@ -2,15 +2,24 @@ const { Router } = require('express');
 const { createAuthorization } = require('../rbac/middleware');
 const { AuthError } = require('../auth/service');
 const { CustomerValidationError } = require('./validation');
-const { customerList } = require('./controller');
+const { customerList, customerCreate, customerEdit } = require('./controller');
+const { CustomerWriteError } = require('./mutations');
 function customersRouter(pool, config, sessions) {
   const router = Router();
   const access = createAuthorization(pool, config);
   router.use('/api/customers', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, sessions);
   router.get('/api/customers', access.requireModuleAccess('customer'), customerList(pool));
+  const writeGuard = (req, res, next) => {
+    if (req.get('origin') !== config.origin) return res.status(403).json({ error: 'invalid_origin', message: 'Request origin is not allowed.' });
+    if (config.secure && !req.secure) return res.status(400).json({ error: 'https_required', message: 'A secure HTTPS connection is required.' });
+    if (!req.is('application/json')) return res.status(415).json({ error: 'unsupported_media_type', message: 'Content-Type must be application/json.' });
+    next();
+  };
+  router.post('/api/customers', writeGuard, access.requireRight('customer.add'), customerCreate(pool));
+  router.put('/api/customers/:custNo', writeGuard, access.requireRight('customer.edit'), customerEdit(pool));
   router.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
-    if (error instanceof AuthError || error instanceof CustomerValidationError) {
+    if (error instanceof AuthError || error instanceof CustomerValidationError || error instanceof CustomerWriteError) {
       return res.status(error.status).json({ error: error.code, message: error.message });
     }
     res.status(503).json({ error: 'customers_unavailable', message: 'Customers could not be loaded. Try again later.' });
