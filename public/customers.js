@@ -20,7 +20,10 @@
     if (label === 'Edit' && window.customerEditor) {
       button.textContent = 'Edit'; button.disabled = false; button.title = 'Edit customer';
       button.addEventListener('click', () => window.customerEditor.open(customer));
-    } else button.title = 'Deletion and restoration are outside this task.';
+    } else if (['Delete', 'Restore'].includes(label) && window.customerState) {
+      button.textContent = label; button.disabled = false; button.title = label + ' customer';
+      button.addEventListener('click', () => { void window.customerState.change(customer, label === 'Restore', button); });
+    } else button.title = 'This action is unavailable until the page enhancement loads.';
     return button;
   }
   function render(data) {
@@ -49,7 +52,7 @@
       if (actions) {
         const cell = document.createElement('td');
         if (customer.status !== 'inactive' && data.capabilities.edit) cell.append(action('Edit', customer));
-        if (data.capabilities.delete) cell.append(action(customer.status === 'inactive' ? 'Restore' : 'Delete'));
+        if (data.capabilities.delete && (customer.status !== 'inactive' || metadata)) cell.append(action(customer.status === 'inactive' ? 'Restore' : 'Delete', customer));
         row.append(cell);
       }
       rows.append(row);

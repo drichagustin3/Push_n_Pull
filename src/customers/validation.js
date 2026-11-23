@@ -44,3 +44,10 @@ function validateCustomerBody(body, creating) {
 }
 module.exports.customerNumber = customerNumber;
 module.exports.validateCustomerBody = validateCustomerBody;
+
+function validateCustomerStateBody(body) {
+  if (body !== undefined && (!body || typeof body !== 'object' || Array.isArray(body) || Object.keys(body).length)) {
+    throw new CustomerValidationError('Customer state changes do not accept profile, status, stamp, or actor fields.');
+  }
+}
+module.exports.validateCustomerStateBody = validateCustomerStateBody;
