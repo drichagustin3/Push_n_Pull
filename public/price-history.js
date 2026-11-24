@@ -7,7 +7,7 @@
   const filterLabel = document.getElementById('priceFilterLabel');
   let product, editing = null, capabilities = {}, busy = false, generation = 0, trigger;
   const text = (tag,value) => { const node = document.createElement(tag); node.textContent = value ?? '—'; return node; };
-  function newPrice() { editing = null; form.reset(); date.disabled = false; save.textContent = 'Add price'; form.hidden = !capabilities.add; }
+  function newPrice() { form.dataset.requiredRight = 'price.add'; editing = null; form.reset(); date.disabled = false; save.textContent = 'Add price'; form.hidden = !capabilities.add; }
   function processing(value) { busy = value; form.setAttribute('aria-busy',String(value)); for(const node of dialog.querySelectorAll('button,input,select')) node.disabled = value; date.disabled = value || editing !== null; }
   function close() { if(busy) return; ++generation; dialog.close(); rows.replaceChildren(); form.reset(); product = null; notice.textContent = ''; trigger?.focus(); }
   async function load() {
@@ -21,7 +21,7 @@
       const tr = document.createElement('tr');for(const label of ['Effective date','Unit price',...(capabilities.metadata?['Status','Stamp']:[]),'Actions']) { const cell=text('th',label);cell.setAttribute('scope','col');tr.append(cell); }head.append(tr);
       for(const price of data.prices){const tr=document.createElement('tr');if(price.status==='inactive')tr.className='product-inactive';tr.append(text('td',price.effDate),text('td',price.unitPrice));if(capabilities.metadata)tr.append(text('td',price.status),text('td',price.stamp));const actions=document.createElement('td');
         const button=(label,fn)=>{const node=text('button',label);node.type='button';node.addEventListener('click',fn);actions.append(node);};
-        if(price.status!=='inactive' && capabilities.edit)button('Edit price',()=>{editing=price.effDate;date.value=price.effDate;date.disabled=true;amount.value=price.unitPrice ?? '';form.hidden=false;save.textContent='Save price';amount.focus();});
+        if(price.status!=='inactive' && capabilities.edit)button('Edit price',()=>{form.dataset.requiredRight='price.edit';editing=price.effDate;date.value=price.effDate;date.disabled=true;amount.value=price.unitPrice ?? '';form.hidden=false;save.textContent='Save price';amount.focus();});
         if(price.status!=='inactive' && capabilities.delete)button('Delete price',()=>{if(window.confirm('Deactivate price effective '+price.effDate+'?'))void mutate('DELETE',price.effDate,{});});
         if(price.status==='inactive' && capabilities.restore)button('Restore price',()=>{void mutate('PUT',price.effDate+'/restore',{});});
         tr.append(actions);rows.append(tr);
@@ -34,7 +34,7 @@
     try{
       const response=await fetch('/api/products/'+encodeURIComponent(product.prodcode)+'/prices'+(suffix?'/'+suffix:''),{method,headers:{'Content-Type':'application/json',Accept:'application/json'},body:JSON.stringify(body)});const data=await response.json();
       if(response.status===401){processing(false);close();window.location.assign('/login?terminated=1');return;}
-      if(!response.ok){notice.textContent=response.status===403?'Price access has changed. Contact an administrator.':[400,404,409].includes(response.status)?data.message:'Price changes could not be saved. Try again later.';if(response.status===403){newPrice();await load();}return;}
+      if(!response.ok){notice.textContent=response.status===403?'Price access has changed. Contact an administrator.':[400,404,409].includes(response.status)?data.message:'Price changes could not be saved. Try again later.';if(response.status===403){newPrice();await load();document.dispatchEvent(new Event('permissions:refresh'));}return;}
       notice.textContent='Price saved.';await load();document.dispatchEvent(new Event('products:changed'));
     }catch{notice.textContent='The price change could not be confirmed. Refresh before retrying.';}
     finally{processing(false);}

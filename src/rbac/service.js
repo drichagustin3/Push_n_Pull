@@ -3,6 +3,8 @@ const { AuthError, checkAccount, unauthenticated } = require('../auth/service');
 const MODULES = {
   customer: 'Customers', product: 'Products', human_resources: 'Human Resources', sales: 'Sales', reports: 'Reports',
 };
+const ACTION_RIGHTS = ['customer.add','customer.edit','customer.delete','product.add','product.edit','product.delete','price.add','price.edit','price.delete'];
+const permissionFlags = access => Object.fromEntries(ACTION_RIGHTS.map(code => [code, access.rights.has(code)]));
 const forbidden = () => new AuthError(403, 'forbidden', 'You do not have permission to access this resource.');
 
 async function loadAccess(pool, auth) {
@@ -29,4 +31,4 @@ function navigation(access) {
   return { user: { name: user.first_name + ' ' + user.last_name, username: user.email, role: user.role },
     items, rightCodes: [...rights], restricted: items.length === 0 };
 }
-module.exports = { MODULES, loadAccess, navigation, forbidden };
+module.exports = { MODULES, loadAccess, navigation, forbidden, permissionFlags };

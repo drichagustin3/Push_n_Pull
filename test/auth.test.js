@@ -33,6 +33,7 @@ async function serve(t, initial = {}, options = {}) {
     async query(sql, args = []) {
       queries.push({ sql, args });
       if (fail) throw new Error('private database details');
+      if (sql.includes('FROM module m JOIN rights_catalogue')) return { rows: [] };
       if (sql.startsWith('SELECT')) {
         const match = sql.includes('email =') ? args[0] === user?.email : String(args[0]) === String(user?.user_id);
         return { rows: user && match ? [{ ...user }] : [] };

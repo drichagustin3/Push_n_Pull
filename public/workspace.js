@@ -24,6 +24,7 @@
     document.getElementById('workspaceName').textContent = ''; document.getElementById('workspaceRole').textContent = '';
     try {
       const data = await read('/api/navigation'); if (version !== generation) return;
+      window.hopePermissions?.sync(data);
       document.getElementById('workspaceName').textContent = data.user.name || data.user.username;
       document.getElementById('workspaceRole').textContent = data.user.role;
       nav.append(link({ href: '/workspace', label: 'Main page' }));
@@ -43,7 +44,7 @@
           if (!Object.keys(result.metrics).length) { const empty = document.createElement('p'); empty.textContent = 'No dashboard metrics are available for your assigned modules.'; metrics.append(empty); }
         } catch (error) { if (version === generation) { const text = document.createElement('p'); text.textContent = error instanceof TypeError ? 'Metrics could not be loaded. Try refreshing.' : error.message; metrics.append(text); } }
       }
-    } catch (error) { if (version === generation) { nav.replaceChildren(); tiles?.replaceChildren(); notify(error instanceof TypeError ? 'Check your connection and refresh the workspace.' : error.message); } }
+    } catch (error) { if (version === generation) { window.hopePermissions?.sync({ rightCodes: [], user: { role: 'user' } }); nav.replaceChildren(); tiles?.replaceChildren(); notify(error instanceof TypeError ? 'Check your connection and refresh the workspace.' : error.message); } }
   }
   logout.addEventListener('click', async () => {
     if (logout.disabled) return; logout.disabled = true;
@@ -56,5 +57,6 @@
   });
   window.addEventListener('focus', () => { void refresh(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) void refresh(); });
+  for (const event of ['products:changed', 'customers:changed', 'permissions:refresh']) document.addEventListener(event, () => { void refresh(); });
   void refresh();
 })();

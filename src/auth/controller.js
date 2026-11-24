@@ -1,5 +1,6 @@
 const { authenticate, setInitialPassword, AuthError } = require('./service');
 const { establishSession, invalidateSession } = require('./session');
+const { loadAccess, permissionFlags } = require('../rbac/service');
 const { loginInput, passwordInput } = require('./validation');
 
 const publicUser = (user) => ({ id: String(user.user_id), email: user.email, status: user.status, requires_password_reset: user.must_change_password || !user.password_hash });
@@ -24,7 +25,10 @@ function authController(pool, config) {
       await invalidateSession(req, res, config);
       res.json({ message: 'Logged out successfully.' });
     },
-    session(req, res) { res.json({ user: publicUser(req.auth.user), message: 'Session active.' }); },
+    async session(req, res) {
+      const access = await loadAccess(pool, req.auth);
+      res.json({ user: publicUser(req.auth.user), message: 'Session active.', rightCodes: [...access.rights], permissions: permissionFlags(access) });
+    },
   };
 }
 

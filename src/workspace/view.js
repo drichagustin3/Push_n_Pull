@@ -1,7 +1,7 @@
 const opening = `<div class="ws-layout"><aside class="ws-sidebar"><a class="ws-brand" href="/workspace">HOPE, INC. ERP</a><nav id="workspaceNav" aria-label="Workspace modules"></nav><button id="workspaceLogout" type="button">Sign out</button></aside><div class="ws-main"><header class="ws-header"><strong id="workspaceName"></strong><span id="workspaceRole"></span></header><p id="workspaceStatus" role="status" tabindex="-1">Loading workspace…</p>`;
 const closing = '</div></div>';
 function decorate(html) {
-  return html.replace('</head>', '<link rel="stylesheet" href="/workspace.css"><script src="/workspace.js" defer></script></head>')
+  return html.replace('</head>', '<link rel="stylesheet" href="/workspace.css"><script src="/permissions.js" defer></script><script src="/workspace.js" defer></script></head>')
     .replace('<body>', '<body>' + opening).replace('</body>', closing + '</body>');
 }
 function page(title = 'Main page', dashboard = false) {

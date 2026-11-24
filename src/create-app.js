@@ -1,4 +1,5 @@
 const express = require('express');
+const { actionDenials } = require('./security/action-denials');
 const path = require('node:path');
 const { registrationRouter } = require('./registration/routes');
 const { createSessionMiddleware } = require('./auth/session');
@@ -9,9 +10,10 @@ const { workspaceRouter } = require('./workspace/routes');
 const { customersRouter } = require('./customers/routes');
 const { productsRouter, productBodyError } = require('./products/routes');
 
-function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions } = {}) {
+function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions, securityLogger = console } = {}) {
   const app = express();
   app.disable('x-powered-by');
+  app.use(actionDenials(securityLogger));
   if (authConfig) app.set('trust proxy', authConfig.trustProxy);
   app.use(express.json({ limit: '100kb' }));
   app.use('/api/products', productBodyError);
