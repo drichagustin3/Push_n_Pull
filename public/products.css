@@ -25,3 +25,15 @@
 #productForm button { margin: .3rem; }
 #productFormError { color: #a51d28; }
 #productNotice { color: #166534; }
+
+#priceHistory { width: min(60rem, calc(100% - 2rem)); box-sizing: border-box; max-height: 90vh; overflow: auto; border: 1px solid #2C1E19; border-radius: .75rem; padding: 1.25rem; color: #2C1E19; background: #FAF7F2; }
+#priceHistory::backdrop { background: #17203388; }
+#priceHistory button { margin: .25rem; }
+#priceForm label { display: grid; gap: .4rem; margin-block: .75rem; }
+#priceForm input { padding: .65rem; font: inherit; width: min(100%, 22rem); box-sizing: border-box; }
+#priceHistory th, #priceHistory td { padding: .65rem; text-align: left; overflow-wrap: anywhere; }
+#priceHistory table { width: 100%; }
+
+#priceHistory table { min-width: 44rem; }
+#priceHistory th { overflow-wrap: normal; }
+#priceHistory td:nth-child(1), #priceHistory td:nth-child(2), #priceHistory td:nth-child(3) { white-space: nowrap; overflow-wrap: normal; }
