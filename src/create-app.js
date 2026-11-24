@@ -7,13 +7,14 @@ const { resetRouter } = require('./password-reset/routes');
 const { usersRouter } = require('./users/routes');
 const { workspaceRouter } = require('./workspace/routes');
 const { customersRouter } = require('./customers/routes');
-const { productsRouter } = require('./products/routes');
+const { productsRouter, productBodyError } = require('./products/routes');
 
 function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions } = {}) {
   const app = express();
   app.disable('x-powered-by');
   if (authConfig) app.set('trust proxy', authConfig.trustProxy);
   app.use(express.json({ limit: '100kb' }));
+  app.use('/api/products', productBodyError);
 
   // Liveness only: database connectivity is checked separately during startup.
   app.get(['/health', '/api/health'], (req, res) => {

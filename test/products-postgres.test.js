@@ -81,12 +81,12 @@ test('Product catalog: isolated PostgreSQL role/filter/current-price acceptance'
     assert.equal((await list('?search=P00001')).products[0].currentPrice,null);
     await pool.query("UPDATE pricehist SET unitprice=2.34 WHERE prodcode='P00001' AND effdate=CURRENT_DATE");
   });
-  await t.test('invalid queries fail; price-only module grants work; page/assets/health integrate without mutation endpoints', async () => {
+  await t.test('invalid queries fail; price-only module grants work; page/assets/health integrate with unsupported collection methods rejected', async () => {
     for (const query of ['?status=bad','?search=a&search=b','?status=all&status=inactive','?search[x]=a','?search='+'x'.repeat(101)]) assert.equal((await request('/api/products'+query)).status,400);
     const price=await list('','price'); assert.equal(price.capabilities.prices,true); assert.equal(price.capabilities.edit,false);
     const page=await request('/workspace/product','user'); assert.equal(page.status,200); assert.match(await page.text(),/productSearch/);
     for (const file of ['/products.js','/products.css','/api/health']) assert.equal((await request(file)).status,200);
-    for (const method of ['POST','PUT','DELETE']) assert.equal((await request('/api/products','admin',{method})).status,404);
+    for (const method of ['PUT','DELETE']) assert.equal((await request('/api/products','admin',{method})).status,404);
   });
   await t.test('revocation and blocked actors fail closed on later requests', async () => {
     await pool.query('UPDATE user_permission SET is_deleted=true WHERE user_id=$1',[actors.user.user_id]); assert.equal((await request('/api/products','user')).status,403);
