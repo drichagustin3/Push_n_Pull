@@ -17,3 +17,11 @@
 #productList [hidden] { display: none; }
 
 #productTable .product-price, #productTable .product-state { white-space: nowrap; }
+
+#productEditor { width: min(32rem, calc(100% - 2rem)); max-height: 90vh; overflow: auto; border: 1px solid #8293ae; border-radius: .75rem; padding: 1.5rem; }
+#productEditor::backdrop { background: #17203388; }
+#productForm label { display: grid; gap: .4rem; margin-block: 1rem; }
+#productForm input, #productForm select { width: 100%; box-sizing: border-box; padding: .65rem; font: inherit; }
+#productForm button { margin: .3rem; }
+#productFormError { color: #a51d28; }
+#productNotice { color: #166534; }

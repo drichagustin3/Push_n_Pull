@@ -33,7 +33,11 @@
       if (actions) {
         const cell = document.createElement('td');
         if (data.capabilities.prices) cell.append(action('Prices'));
-        if (product.status !== 'inactive' && data.capabilities.edit) cell.append(action('Edit'));
+        if (product.status !== 'inactive' && data.capabilities.edit) {
+          const edit = window.productEditor ? text('button', 'Edit') : action('Edit'); edit.type = 'button';
+          if (window.productEditor) edit.addEventListener('click', () => window.productEditor.open(product));
+          cell.append(edit);
+        }
         if (data.capabilities.delete && (product.status !== 'inactive' || metadata)) cell.append(action(product.status === 'inactive' ? 'Restore' : 'Delete'));
         row.append(cell);
       }
@@ -57,5 +61,6 @@
   retry.addEventListener('click', () => { void load(); });
   window.addEventListener('focus', () => { clearTimeout(timer); void load(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { clearTimeout(timer); void load(); } });
+  document.addEventListener('products:changed', () => { clearTimeout(timer); void load(); });
   void load();
 })();
