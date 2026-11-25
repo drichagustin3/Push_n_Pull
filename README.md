@@ -53,73 +53,141 @@ An **ERP (Enterprise Resource Planning)** system replaces separate spreadsheets 
 | `Shared Role` | 🗄️ `DB Admin` |
 | `Shared Role` | 🔍 `Tester` |
 
-## Backend setup (S1-DEV-01)
+## Local Development Setup
 
-Use Node.js 24 or later (`nvm use` if available), npm, and a running PostgreSQL
-server. Docker is not required. This branch contains only the Express scaffold,
-environment configuration, and reusable PostgreSQL pool.
+### Prerequisites
+
+Install Git, Node.js 24 or newer, and npm. Use a running PostgreSQL server and
+install the PostgreSQL client tools if you need to create a database. VS Code is
+optional. Express can connect directly to an existing PostgreSQL server without
+Docker. The full local Supabase stack requires Docker or a compatible container
+runtime.
+
+### Clone and install
 
 ```bash
+git clone https://github.com/drichagustin3/Push_n_Pull.git
+cd Push_n_Pull
+git branch --show-current
 npm ci
+```
+
+In Windows PowerShell, use `npm.cmd ci` to avoid the execution-policy restriction
+on `npm.ps1`. If you already have a checkout, start in its repository root.
+Some Sprint 2 features are available only on unmerged branches. Check the
+feature's pull request and your current branch before troubleshooting a missing
+screen or endpoint.
+
+### Configure your local environment
+
+If you do not already have a repository-root `.env`, copy the example.
+
+**Windows PowerShell**
+
+```powershell
+Copy-Item .env.example .env
+```
+
+**macOS or Linux**
+
+```bash
 cp .env.example .env
 ```
 
-Edit `.env` with your local PostgreSQL username and password. Create an empty
-`hopedb` database if necessary, using an existing PostgreSQL role with permission
-to create databases:
+- Replace the example `SESSION_SECRET` with a private random value of at least
+  32 bytes. Run the following command in your terminal and paste the result into
+  `.env`. Keep the secret and database credentials out of Git.
+- Set `APP_ORIGIN` to the exact origin you will open in your browser, such as
+  `http://localhost:3000`, with no trailing slash or path. Set `APP_URL` to the
+  same value for password-reset links. If you change `PORT`, update both URLs.
+- Set `PGHOST`, `PGPORT`, and `PGDATABASE` for your local server. Replace the
+  `PGUSER` and `PGPASSWORD` placeholders with your local PostgreSQL credentials.
+  Use `PGSSLMODE=disable` for a local server without TLS.
+- For local password-reset email delivery, set `MAIL_FROM`, `SMTP_HOST`, and
+  `SMTP_PORT`. If the server requires authentication, set `SMTP_USER` and
+  `SMTP_PASS` together. With `NODE_ENV=development` and no `SMTP_HOST`, the app
+  prints private reset links in the server console. Outside development, SMTP
+  and a valid sender address are required.
+
+```bash
+node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"
+```
+
+### Prepare PostgreSQL
+
+If the local `hopedb` database does not exist, create it with a PostgreSQL role
+that can create databases. Replace `YOUR_POSTGRES_USER` with that role. Run
+`createdb` from the PostgreSQL installation's `bin` directory if it is missing
+from your `PATH`.
 
 ```bash
 createdb -h 127.0.0.1 -p 5432 -U YOUR_POSTGRES_USER -W hopedb
-npm run db:check
-npm start
 ```
 
-`createdb` is a PostgreSQL client utility, installed separately from npm. Database
-creation is a local setup step; the application never creates tables, runs
-migrations, or loads the reference seed. An existing empty `hopedb` is sufficient
-for this task. Successful startup prints `HOPE ERP listening on port 3000.`
+An empty database can pass a connectivity check. Application startup also needs
+the expected columns in `app_user` and `auth_session` from DBA-03 and in
+`password_reset_token` from DBA-04. Authentication requires an approved local
+account that can sign in. Business screens can have further schema requirements,
+including operational soft-delete columns.
 
-```bash
-curl http://localhost:3000/health
-# {"status":"ok"}
-npm run dev  # restart on source changes
-npm test
-```
+Use the team's schema baseline for your branch. The files in
+[`supabase/migrations/`](supabase/migrations/) are ordered migration scripts.
+[`HopeDB_audit.sql.txt`](database/reference/HopeDB_audit.sql.txt) is reference SQL
+that includes its own table creation and sample data. Follow the
+[database setup guide](database/README.md) and confirm the required baseline with
+the DBA if your local schema is missing objects. The app applies no migrations or
+seed data on startup. Obtain authorization before applying changes to shared
+Supabase.
 
-`GET /health` and its alias `GET /api/health` return `{"status":"ok"}` as liveness
-endpoints. The shared handler does not query the database on each
-request. Registration is available at `/register`; see the
-[S1-DEV-02 integration notes](docs/S1-DEV-02.md). Unimplemented routes return JSON 404 responses.
+### Run and verify the app
 
-Authentication is available at `/login`; see the [S1-DEV-03 setup and database
-contract](docs/S1-DEV-03.md). Before starting the server, configure a private
-`SESSION_SECRET` and exact `APP_ORIGIN`, and install the expected auth schema.
-`npm run db:check` verifies connectivity only; server startup also checks auth columns.
+| Action | macOS or Linux | Windows PowerShell |
+| :--- | :--- | :--- |
+| Check PostgreSQL connectivity | `npm run db:check` | `npm.cmd run db:check` |
+| Start the application | `npm start` | `npm.cmd start` |
+| Restart automatically when source files change | `npm run dev` | `npm.cmd run dev` |
+| Run the default automated tests | `npm test` | `npm.cmd test` |
 
-Password recovery is available at `/forgot-password`; see the
-[S1-DEV-04 setup, SMTP configuration, and verification notes](docs/S1-DEV-04.md).
-Server startup also checks the DBA-04 reset-token schema. Configure SMTP for
-production; development without SMTP prints private reset links locally.
+Run the connectivity check first, then choose either start command. The
+connectivity check runs `SELECT 1`. Startup also validates the session and reset
+configuration and checks the authentication and reset-token schema before
+listening. With the default port, successful startup prints
+`HOPE ERP listening on port 3000.`
 
-Authenticated Admins and Superadmins can open `/users` for account management;
-see the [S1-DEV-05 scope, API contract, and testing notes](docs/S1-DEV-05.md).
-Admins manage Users only. Superadmins can create privileged accounts.
+Open the following paths at the configured origin, for example
+`http://localhost:3000`.
 
-Superadmin approval/rejection, role assignment and guarded soft deletion are now
-implemented in [S1-DEV-06](docs/S1-DEV-06.md), including last-active-Superadmin
-protection on both block routes.
+| Path | What to verify |
+| :--- | :--- |
+| `/health` or `/api/health` | Returns `{"status":"ok"}` as a liveness check. |
+| `/register`, `/login`, `/forgot-password` | Public registration, sign-in, and password recovery pages. |
+| `/account`, `/workspace` | Available after sign-in and any required initial password setup. Workspace modules depend on your effective permissions. |
+| `/users` | User Management for Admins and Superadmins. |
 
-The User Management Rights dialog is implemented in
-[S1-DEV-07](docs/S1-DEV-07.md): eligible accounts have a Rights action for the
-36 grouped permissions, with transactional updates and existing trigger auditing.
-Future business endpoints must explicitly apply the exact-action middleware described below.
+The default test suite runs with installed dependencies and can open loopback
+HTTP ports. It does not require a configured PostgreSQL database. PostgreSQL
+integration suites are opt-in and require an authorized local test database.
+Some Customer and Product runners require a disposable Unix-socket PostgreSQL
+cluster. See the relevant feature notes for prerequisites.
 
-The authenticated main workspace is now available at `/account` or `/workspace`;
-the root URL redirects to the real authenticated entry. See
-[S1-DEV-08](docs/S1-DEV-08.md) for navigation/RBAC contracts, role policy, live
-metrics verification and the outstanding DBA business soft-delete dependency.
-Future module links open protected shells; business CRUD and the audit viewer
-remain assigned to later sprints.
+### Common setup problems
+
+| Symptom | What to check |
+| :--- | :--- |
+| PowerShell blocks `npm.ps1` | Use the corresponding `npm.cmd` command. |
+| Database connection fails | Confirm PostgreSQL is running, check the host, port, database, role, and password, then rerun the connectivity check. |
+| Connectivity passes and startup reports a schema error | Confirm the configured database has the DBA-03 and DBA-04 schema before starting the server. |
+| Session or reset configuration is rejected | Replace the example secret and check that `APP_ORIGIN` and `APP_URL` match the exact browser origin. |
+| The HTTP port is in use | Stop the process using that port or set a free `PORT` and update both application URLs. |
+| A feature is missing | Check `git branch --show-current` and verify the feature's PR and merge status. |
+
+### Sprint 1 implementation notes
+
+- [Registration](docs/S1-DEV-02.md), [authentication and sessions](docs/S1-DEV-03.md),
+  and [password reset and SMTP](docs/S1-DEV-04.md).
+- [User Management](docs/S1-DEV-05.md), [Superadmin controls](docs/S1-DEV-06.md),
+  and [per-action rights](docs/S1-DEV-07.md).
+- [Workspace navigation, RBAC, and database dependencies](docs/S1-DEV-08.md).
 
 ### Configuration
 
