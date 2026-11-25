@@ -38,15 +38,13 @@ Style inline alerts using `#FEF2F2` background, `#DC2626` / `#FECACA` border, an
 Before executing a soft delete or restore action, open a `<dialog>` confirmation modal over a dimmed backdrop:
 
 - **Confirm Delete (Soft Delete -> Inactive / `DELETED`):**
-- **Title:** `"Confirm Delete"`
-- **Body:** `"Mark [prodCode] — [description] as Inactive? This record will be shaded for administrators and hidden from standard user views."`
-- **Primary Action:** `"Confirm Delete"` (`.btn-delete`) -> `DELETE /api/products/:prodCode`
+  - **Title:** `"Confirm Delete"`
+  - **Body:** `"Mark [prodCode] — [description] as Inactive? This record will be shaded for administrators and hidden from standard user views."`
+  - **Primary Action:** `"Confirm Delete"` (`.btn-delete`) -> `DELETE /api/products/:prodCode`
 - **Confirm Restore (Admin Only -> Active / `RESTORED`):**
-- **Title:** `"Confirm Restore"`
-- **Body:** `"Restore [prodCode] — [description] back to Active status?"`
-- **Primary Action:** `"Confirm Restore"` (`.btn-restore`) -> `PUT /api/products/:prodCode/restore`
-
----
+  - **Title:** `"Confirm Restore"`
+  - **Body:** `"Restore [prodCode] — [description] back to Active status?"`
+  - **Primary Action:** `"Confirm Restore"` (`.btn-restore`) -> `PUT /api/products/:prodCode/restore`
 
 ## 4. Role-Based & Modal Contract (`products.html` / `products.js`)
 
