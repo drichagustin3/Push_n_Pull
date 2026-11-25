@@ -101,23 +101,24 @@
         </div>
       </a>
 
-      <!-- Right Navigation Actions -->
-      <nav aria-label="Primary actions" class="flex items-center gap-2 sm:gap-3">
-        <button
-          type="button"
-          onclick="openModal('loginModal')"
-          class="rounded-xl px-3.5 py-2 text-sm font-semibold text-[var(--text-espresso)] hover:bg-[var(--bg-soft)] transition-colors cursor-pointer"
-        >
-          Sign In
-        </button>
-        <button
-          type="button"
-          onclick="openModal('registerModal')"
-          class="btn-teal-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-sm cursor-pointer"
-        >
-          Register
-        </button>
-      </nav>
+     <!-- Right Navigation Actions -->
+<nav aria-label="Primary actions" class="flex items-center gap-2 sm:gap-3">
+  <a
+  href="#"
+  onclick="openModal('loginModal'); return false;"
+  class="rounded-xl px-3.5 py-2 text-sm font-semibold text-[var(--text-espresso)] hover:bg-[var(--bg-soft)] transition-colors cursor-pointer"
+>
+  Sign In
+</a>
+
+<a
+  href="#"
+  onclick="openModal('registerModal'); return false;"
+  class="btn-teal-primary rounded-xl px-4 py-2 text-sm font-semibold shadow-sm cursor-pointer"
+>
+  Register
+</a>
+</nav>
     </div>
   </header>
 
@@ -477,36 +478,8 @@
       <h2 id="loginModalTitle" class="mt-4 text-2xl font-extrabold text-[var(--text-espresso)]">Sign In</h2>
       <p class="mt-1 text-sm text-[var(--text-umber)]">Access your role-scoped ERP workspace</p>
 
-      <!-- Quick Persona Fill Buttons for QA Testing -->
-      <div class="erp-soft-panel mt-4 rounded-xl border p-3">
-        <p class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Quick Test Credentials</p>
-        <div class="mt-2 flex flex-wrap gap-1.5">
-          <button
-            type="button"
-            onclick="fillLogin('superadmin@hope-erp.com', 'HopeSuper#2026')"
-            class="erp-card rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--text-espresso)] hover:border-[var(--teal-primary)] cursor-pointer"
-          >
-            Superadmin
-          </button>
-          <button
-            type="button"
-            onclick="fillLogin('admin@hope-erp.com', 'HopeAdmin#2026')"
-            class="erp-card rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--text-espresso)] hover:border-[var(--teal-primary)] cursor-pointer"
-          >
-            Admin
-          </button>
-          <button
-            type="button"
-            onclick="fillLogin('user@hope-erp.com', 'HopeUser#2026')"
-            class="erp-card rounded-lg border px-3 py-1.5 text-xs font-semibold text-[var(--text-espresso)] hover:border-[var(--teal-primary)] cursor-pointer"
-          >
-            User
-          </button>
-        </div>
-      </div>
-
-      <form onsubmit="handleLogin(event)" class="mt-4 space-y-4">
-        <div>
+<form class="mt-4 space-y-4">
+          <div>
           <label for="loginEmail" class="block text-xs font-bold text-[var(--text-espresso)]">Email address</label>
           <input
             id="loginEmail"
@@ -531,11 +504,32 @@
           <input
             id="loginPassword"
             type="password"
-            required
             placeholder="••••••••••••"
             class="erp-card mt-1.5 w-full rounded-xl border px-3.5 py-2.5 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
           />
         </div>
+
+<details class="rounded-xl border border-[var(--border)] p-3">
+          <summary class="cursor-pointer text-xs font-semibold text-[var(--teal-primary)]">
+            First-time account? Use setup token
+          </summary>
+
+          <label
+            for="loginSetupToken"
+            class="mt-3 block text-xs font-bold text-[var(--text-espresso)]"
+          >
+            One-time setup token
+          </label>
+
+          <input
+            id="loginSetupToken"
+            type="password"
+            autocomplete="off"
+            maxlength="64"
+            placeholder="Enter your setup token"
+            class="erp-card mt-1.5 w-full rounded-xl border px-3.5 py-2.5 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+          />
+        </details>
 
         <button type="submit" class="btn-teal-primary w-full rounded-xl py-2.5 text-sm font-semibold shadow-sm cursor-pointer">
           Sign In
@@ -545,7 +539,7 @@
       <p class="mt-5 text-center text-xs text-[var(--text-umber)]">
         Need an account?
         <button
-          type="button"
+        type="button"
           onclick="switchModal('loginModal', 'registerModal')"
           class="font-bold text-[var(--teal-primary)] hover:underline cursor-pointer"
         >
@@ -584,8 +578,8 @@
         Self-registration assigns the <strong>User</strong> role with <strong>Pending</strong> status until an Admin or Superadmin approves your account.
       </div>
 
-      <form onsubmit="handleRegister(event)" class="mt-4 space-y-3.5">
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+<form class="mt-4 space-y-3.5">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label for="regFirst" class="block text-xs font-bold text-[var(--text-espresso)]">First name</label>
             <input
@@ -619,17 +613,38 @@
           />
         </div>
 
-        <div>
-          <label for="regPassword" class="block text-xs font-bold text-[var(--text-espresso)]">Password</label>
-          <input
-            id="regPassword"
-            type="password"
-            required
-            minlength="8"
-            placeholder="Minimum 8 characters"
-            class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
-          />
-        </div>
+       <div>
+  <label for="regPassword" class="block text-xs font-bold text-[var(--text-espresso)]">
+    Password
+  </label>
+  <input
+    id="regPassword"
+    type="password"
+    required
+    minlength="12"
+    autocomplete="new-password"
+    placeholder="Minimum 12 characters"
+    class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+  />
+</div>
+
+<div>
+  <label
+    for="regConfirmPassword"
+    class="block text-xs font-bold text-[var(--text-espresso)]"
+  >
+    Confirm Password
+  </label>
+  <input
+    id="regConfirmPassword"
+    type="password"
+    required
+    minlength="12"
+    autocomplete="new-password"
+    placeholder="Re-enter your password"
+    class="erp-card mt-1 w-full rounded-xl border px-3 py-2 text-sm text-[var(--text-espresso)] placeholder-[var(--text-muted)] focus:border-[var(--teal-primary)] focus:outline-none focus:ring-2 focus:ring-[var(--teal-primary)]/20"
+  />
+</div>
 
         <button type="submit" class="btn-teal-primary w-full rounded-xl py-2.5 text-sm font-semibold shadow-sm cursor-pointer">
           Register
@@ -674,8 +689,8 @@
       <h2 id="resetModalTitle" class="text-2xl font-extrabold text-[var(--text-espresso)]">Reset Password</h2>
       <p class="mt-1 text-sm text-[var(--text-umber)]">Enter your account email to receive password recovery instructions</p>
 
-      <form onsubmit="handleReset(event)" class="mt-5 space-y-4">
-        <div>
+<form class="mt-5 space-y-4">
+          <div>
           <label for="resetEmail" class="block text-xs font-bold text-[var(--text-espresso)]">Email address</label>
           <input
             id="resetEmail"
@@ -793,10 +808,6 @@
       openModal(openId);
     }
 
-    function fillLogin(email, password) {
-      document.getElementById('loginEmail').value = email;
-      document.getElementById('loginPassword').value = password;
-    }
 
     function showToast(title, message, dotColor = '#0F766E') {
       const banner = document.getElementById('toastBanner');
@@ -814,49 +825,6 @@
       if (banner) banner.classList.add('hidden');
     }
 
-    function handleLogin(event) {
-      event.preventDefault();
-      const email = document.getElementById('loginEmail').value.trim().toLowerCase();
-
-      if (email.startsWith('pending')) {
-        showToast('Sign In Blocked — Pending Status', 'This account is awaiting administrator approval.', '#D97706');
-        return;
-      }
-      if (email.startsWith('blocked')) {
-        showToast('Sign In Denied — Blocked Status', 'This account is currently blocked.', '#DC2626');
-        return;
-      }
-
-      const role = email.startsWith('superadmin')
-        ? 'Superadmin'
-        : email.startsWith('admin')
-        ? 'Admin'
-        : 'User';
-
-      closeModal('loginModal');
-      showToast(`Signed In (${role})`, `Authenticated preview session for ${email}.`, '#0F766E');
-    }
-
-    function handleRegister(event) {
-      event.preventDefault();
-      const first = document.getElementById('regFirst').value.trim();
-      const email = document.getElementById('regEmail').value.trim();
-      closeModal('registerModal');
-      event.target.reset();
-      showToast(
-        'Registration Submitted (Pending)',
-        `${first} (${email}) registered with default role User and status Pending.`,
-        '#0F766E'
-      );
-    }
-
-    function handleReset(event) {
-      event.preventDefault();
-      const email = document.getElementById('resetEmail').value.trim();
-      closeModal('resetModal');
-      event.target.reset();
-      showToast('Password Reset Requested', `Recovery instructions prepared for ${email}.`, '#0F766E');
-    }
 
     ['loginModal', 'registerModal', 'resetModal'].forEach((id) => {
       const modal = document.getElementById(id);
@@ -874,5 +842,6 @@
     // Initialize default module view
     selectModule(currentModule);
   </script>
+  <script src="/landing-auth.js" defer></script>
 </body>
 </html>
