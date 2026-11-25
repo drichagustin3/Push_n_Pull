@@ -90,7 +90,13 @@ test('Department endpoints enforce HR rights, role visibility, and database audi
   assert.equal((await request(base + '?status=All&status=Inactive', cookies.admin)).status, 400);
   const literal = await (await request(base + '?status=All&search=%25', cookies.admin)).json();
   assert.deepEqual(literal.departments.map(({ deptcode }) => deptcode), ['Z3Z']);
+  await pool.query(`UPDATE user_permission SET is_deleted=true WHERE right_code='dept.delete';
+    UPDATE rights_catalogue SET is_deleted=true WHERE right_code='dept.delete';`);
+  const capabilities = (await (await request(base + '?status=Inactive', cookies.admin)).json()).capabilities;
+  assert.equal(capabilities.delete, false);
+  assert.equal(capabilities.restore, true);
   assert.equal((await request(detail + '/restore', cookies.admin, 'POST')).status, 200);
+  await pool.query("UPDATE rights_catalogue SET is_deleted=false WHERE right_code='dept.delete'");
   assert.deepEqual(await (await request(detail, cookies.reader)).json(),
     { department: { deptcode: 'Z3Z', deptname: 'Edited 50% Group' } });
 
@@ -100,10 +106,16 @@ test('Department endpoints enforce HR rights, role visibility, and database audi
   const [department] = (await pool.query("SELECT is_deleted FROM department WHERE deptcode='IT'")).rows;
   assert.equal(department.is_deleted, false);
   assert.equal((await pool.query("SELECT count(*)::int AS n FROM audit_log WHERE table_name='department' AND record_key='IT'")).rows[0].n, 0);
-  const { rows } = await pool.query(`SELECT action, action_by FROM audit_log
+  const { rows } = await pool.query(`SELECT action, action_by, new_values->>'stamp' AS stamp,
+    to_char(action_at AT TIME ZONE 'Asia/Manila', 'YYYY-MM-DD HH12:MI AM') AS manila_time FROM audit_log
     WHERE table_name='department' AND record_key='Z3Z' ORDER BY audit_id`);
   assert.deepEqual(rows.map(({ action, action_by }) => [action, action_by]), [
     ['ADD', 'adder@example.test'], ['EDIT', 'editor@example.test'],
     ['DELETE', 'deleter@example.test'], ['RESTORE', 'admin@example.test'],
   ]);
+  for (const { action, action_by, stamp, manila_time } of rows) {
+    assert.equal(stamp, [action, action_by, manila_time].join(' '));
+  }
+  assert.equal((await request(detail, cookies.admin, 'DELETE')).status, 200);
+  assert.equal((await request(detail + '/restore', cookies.super, 'POST')).status, 200);
 });

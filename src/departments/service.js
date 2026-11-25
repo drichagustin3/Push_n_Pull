@@ -2,10 +2,11 @@
 const { loadAccess, forbidden } = require('../rbac/service');
 
 const moduleCode = 'human_resources';
-const rights = { create: 'dept.add', edit: 'dept.edit', delete: 'dept.delete', restore: 'dept.delete' };
+const adminRoles = ['admin', 'superadmin'];
+const rights = { create: 'dept.add', edit: 'dept.edit', delete: 'dept.delete' };
 const columns = 'deptcode, deptname';
 const metadataColumns = columns + ', is_deleted, stamp';
-const isAdmin = ({ user }) => ['admin', 'superadmin'].includes(user.role);
+const isAdmin = ({ user }) => adminRoles.includes(user.role);
 const notFound = () => new AuthError(404, 'department_not_found', 'Department not found.');
 
 function serialize(record, metadata) {
@@ -30,7 +31,7 @@ async function listDepartments(pool, access, { search, status }) {
     departments: row.departments.map((record) => serialize(record, metadata)),
     filter: { search, status: metadata ? status : 'active' },
     capabilities: { metadata, add: access.rights.has(rights.create), edit: access.rights.has(rights.edit),
-      delete: access.rights.has(rights.delete), restore: metadata && access.rights.has(rights.restore) },
+      delete: access.rights.has(rights.delete), restore: metadata },
     ...(metadata ? { counts: row.counts } : {}),
   };
 }
@@ -62,8 +63,9 @@ async function writeDepartment(pool, auth, operation, code, name) {
     if (!actor.rowCount) throw unauthenticated();
     const access = await loadAccess(client, auth);
     const metadata = isAdmin(access);
-    if (!access.modules.has(moduleCode) || !access.rights.has(rights[operation])
-      || (operation === 'restore' && !metadata)) throw forbidden();
+    const authorized = operation === 'restore' ? metadata
+      : access.modules.has(moduleCode) && access.rights.has(rights[operation]);
+    if (!authorized) throw forbidden();
 
     const [contract] = (await client.query(`SELECT count(*)::int AS enabled FROM pg_trigger
       WHERE tgrelid = 'public.department'::regclass AND tgenabled IN ('O', 'A')
@@ -95,4 +97,4 @@ async function writeDepartment(pool, auth, operation, code, name) {
   }
 }
 
-module.exports = { moduleCode, rights, listDepartments, readDepartment, writeDepartment };
+module.exports = { moduleCode, adminRoles, rights, listDepartments, readDepartment, writeDepartment };

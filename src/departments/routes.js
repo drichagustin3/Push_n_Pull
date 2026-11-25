@@ -1,7 +1,7 @@
 ﻿const { Router } = require('express');
 const { AuthError } = require('../auth/service');
 const { createAuthorization } = require('../rbac/middleware');
-const { moduleCode, rights, listDepartments, readDepartment, writeDepartment } = require('./service');
+const { moduleCode, adminRoles, rights, listDepartments, readDepartment, writeDepartment } = require('./service');
 
 const path = '/api/hr/departments';
 const detail = path + '/:deptCode';
@@ -47,7 +47,8 @@ function departmentsRouter(pool, config, sessions) {
     ['post', path, 'create'], ['put', detail, 'edit'], ['delete', detail, 'delete'],
     ['post', detail + '/restore', 'restore'],
   ]) {
-    router[method](route, access.requireRight(rights[operation]), async (req, res) => {
+    const authorize = operation === 'restore' ? access.requireRole(...adminRoles) : access.requireRight(rights[operation]);
+    router[method](route, authorize, async (req, res) => {
       if (req.get('origin') !== config.origin) throw new AuthError(403, 'invalid_origin', 'Request origin is not allowed.');
       if (config.secure && !req.secure) throw new AuthError(400, 'https_required', 'A secure HTTPS connection is required.');
       const creating = operation === 'create';
