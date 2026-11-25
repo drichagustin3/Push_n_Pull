@@ -32,7 +32,11 @@
       if (metadata) { const state = text('td', product.status === 'inactive' ? 'Inactive' : 'Active'); state.className = 'product-state'; row.append(state, text('td', product.stamp)); }
       if (actions) {
         const cell = document.createElement('td');
-        if (data.capabilities.prices) cell.append(action('Prices'));
+        if (data.capabilities.prices) {
+          const prices = window.priceHistory ? text('button', 'Prices') : action('Prices'); prices.type = 'button';
+          if (window.priceHistory) prices.addEventListener('click', () => window.priceHistory.open(product));
+          cell.append(prices);
+        }
         if (product.status !== 'inactive' && data.capabilities.edit) {
           const edit = window.productEditor ? text('button', 'Edit') : action('Edit'); edit.type = 'button';
           if (window.productEditor) edit.addEventListener('click', () => window.productEditor.open(product));

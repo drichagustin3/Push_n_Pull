@@ -4,6 +4,7 @@ const { AuthError } = require('../auth/service');
 const { ProductValidationError } = require('./validation');
 const { ProductWriteError } = require('./mutations');
 const { productList, productCreate, productEdit, productTransition } = require('./controller');
+const { priceList, priceWrite } = require('./price-controller');
 function productsRouter(pool, config, sessions) {
   const router = Router(), access = createAuthorization(pool, config);
   router.use('/api/products', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, sessions);
@@ -18,6 +19,11 @@ function productsRouter(pool, config, sessions) {
   router.put('/api/products/:prodCode', writeGuard, access.requireRight('product.edit'), productEdit(pool));
   router.delete('/api/products/:prodCode', writeGuard, access.requireRight('product.delete'), productTransition(pool, 'delete'));
   router.put('/api/products/:prodCode/restore', writeGuard, access.requireRole('admin', 'superadmin'), productTransition(pool, 'restore'));
+  router.get('/api/products/:prodCode/prices', access.requireModuleAccess('product'), priceList(pool));
+  router.post('/api/products/:prodCode/prices', writeGuard, access.requireRight('price.add'), priceWrite(pool, 'add'));
+  router.put('/api/products/:prodCode/prices/:effDate', writeGuard, access.requireRight('price.edit'), priceWrite(pool, 'edit'));
+  router.delete('/api/products/:prodCode/prices/:effDate', writeGuard, access.requireRight('price.delete'), priceWrite(pool, 'delete'));
+  router.put('/api/products/:prodCode/prices/:effDate/restore', writeGuard, access.requireRole('admin', 'superadmin'), priceWrite(pool, 'restore'));
   router.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError || error instanceof ProductValidationError || error instanceof ProductWriteError) return res.status(error.status).json({ error: error.code, message: error.message });
