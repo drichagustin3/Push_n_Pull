@@ -50,7 +50,7 @@
     try {
       const response = await fetch('/api/v1/auth/logout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{}' });
       if (!response.ok) throw new Error('Sign out failed.');
-      window.location.assign('/login');
+      window.location.assign('/');
     } catch { notify('Unable to sign out. Try again.'); }
     finally { logout.disabled = false; }
   });
