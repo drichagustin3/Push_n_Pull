@@ -51,7 +51,7 @@ document.getElementById('logout')?.addEventListener('click', async (event) => {
   button.disabled = true;
   try {
     await send('logout', {});
-    window.location.assign('/login');
+    window.location.assign('/');
   } catch { showMessage('Unable to sign out. Try again.'); }
   finally { button.disabled = false; }
 });
