@@ -15,9 +15,13 @@
     rows.replaceChildren(); head.replaceChildren(); tabs.replaceChildren(); tabs.hidden = true;
     add.hidden = true; table.hidden = true; retry.hidden = true;
   }
-  function action(label) {
+  function action(label, customer) {
     const button = text('button', label + ' (coming soon)'); button.type = 'button'; button.disabled = true;
-    button.title = 'Customer changes are outside this list task.'; return button;
+    if (label === 'Edit' && window.customerEditor) {
+      button.textContent = 'Edit'; button.disabled = false; button.title = 'Edit customer';
+      button.addEventListener('click', () => window.customerEditor.open(customer));
+    } else button.title = 'Deletion and restoration are outside this task.';
+    return button;
   }
   function render(data) {
     const metadata = data.capabilities.metadata;
@@ -44,7 +48,7 @@
       if (metadata) row.append(text('td', customer.status === 'inactive' ? 'Inactive' : 'Active'), text('td', customer.stamp));
       if (actions) {
         const cell = document.createElement('td');
-        if (customer.status !== 'inactive' && data.capabilities.edit) cell.append(action('Edit'));
+        if (customer.status !== 'inactive' && data.capabilities.edit) cell.append(action('Edit', customer));
         if (data.capabilities.delete) cell.append(action(customer.status === 'inactive' ? 'Restore' : 'Delete'));
         row.append(cell);
       }
@@ -77,5 +81,6 @@
   retry.addEventListener('click', () => { void load(); });
   window.addEventListener('focus', () => { clearTimeout(timer); void load(); });
   document.addEventListener('visibilitychange', () => { if (!document.hidden) { clearTimeout(timer); void load(); } });
+  document.addEventListener('customers:changed', () => { clearTimeout(timer); void load(); });
   void load();
 })();
