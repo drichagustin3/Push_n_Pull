@@ -77,12 +77,12 @@ test('network errors clear secrets and re-enable the form', async () => {
   assert.equal(ui.button.disabled, false);
 });
 
-test('logout returns to login, and revoked account sessions redirect with a notice', async () => {
+test('logout returns to public landing page, and revoked account sessions redirect with a notice', async () => {
   let endpoint;
   const ui = mount({ fetch: async (url) => { endpoint = url; return { ok: true, json: async () => ({ message: 'Logged out successfully.' }) }; } });
   await ui.logout();
   assert.equal(endpoint, '/api/v1/auth/logout');
-  assert.deepEqual(ui.redirects, ['/login']);
+  assert.deepEqual(ui.redirects, ['/']);
   const revoked = mount({ account: true, search: '?terminated=1', fetch: async () => ({ ok: false, json: async () => ({ message: 'Your account has been blocked.' }) }) });
   await new Promise((resolve) => setImmediate(resolve));
   assert.deepEqual(revoked.redirects, ['/login?terminated=1']);
