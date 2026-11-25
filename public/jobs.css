@@ -1,0 +1,18 @@
+﻿#jobs > header, #jobFilters { display: flex; align-items: end; gap: 1rem; flex-wrap: wrap; }
+#jobs > header { justify-content: space-between; align-items: center; }
+#jobs label { display: grid; gap: .35rem; }
+#jobs input, #jobs select, #jobs button { font: inherit; padding: .55rem .75rem; }
+#jobs button { border: 1px solid #0f766e; border-radius: .35rem; background: white; color: #174b47; }
+#jobs button:not(:disabled) { cursor: pointer; }
+#jobStatusFilter { display: flex; gap: .5rem; flex-wrap: wrap; margin-block: .75rem; }
+#jobStatusFilter button[aria-pressed="true"] { background: #0f766e; color: white; }
+#jobs [hidden] { display: none; }
+.job-table { overflow-x: auto; }
+#jobTable { width: 100%; border-collapse: collapse; }
+#jobTable th, #jobTable td { padding: .75rem; text-align: left; border-bottom: 1px solid #ddd5ce; }
+#jobTable th { background: #faf7f2; }
+#jobTable button + button { margin-inline-start: .4rem; }
+#jobDialog { width: min(29rem, calc(100vw - 3rem)); border: 1px solid #7c7168; border-radius: .7rem; padding: 1.5rem; }
+#jobDialog::backdrop { background: #0f172a99; }
+#jobFields label { margin-block: .8rem; }
+#jobError { color: #991b1b; }
