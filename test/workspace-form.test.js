@@ -55,7 +55,7 @@ test('logout uses the established endpoint, blocks duplicate requests and safely
     return url === '/api/navigation' ? response(navigation()) : response({ metrics: {} });
   });
   await flush(); const first = ui.nodes.workspaceLogout.events.click(); await ui.nodes.workspaceLogout.events.click();
-  assert.equal(logoutCalls, 1); finish(response({})); await first; assert.deepEqual(ui.redirects, ['/login']);
+  assert.equal(logoutCalls, 1); finish(response({})); await first; assert.deepEqual(ui.redirects, ['/']);
   const failed = mount(async () => { throw new TypeError('private network detail'); });
   await flush(); assert.equal(failed.nodes.workspaceStatus.textContent, 'Check your connection and refresh the workspace.');
 });
