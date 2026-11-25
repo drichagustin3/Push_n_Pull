@@ -7,6 +7,7 @@ const { page } = require('./view');
 const { customerPage } = require('../customers/view');
 const { productPage } = require('../products/view');
 const { departmentPage } = require('../departments/view');
+const { jobPage } = require('../jobs/view');
 
 function workspaceRouter(pool, config, sessions) {
   const router = Router();
@@ -23,6 +24,7 @@ function workspaceRouter(pool, config, sessions) {
     router.get('/workspace/' + code, access.requireModuleAccess(code),
       (req, res) => res.send(modulePages[code]?.() ?? page(label)));
   }
+  router.get('/workspace/human_resources/jobs', access.requireModuleAccess('human_resources'), (req, res) => res.send(jobPage()));
   router.get('/workspace/settings', access.requireRole('superadmin'), (req, res) => res.send(page('System Settings')));
   router.get('/workspace/audit', access.requireRole('superadmin'), (req, res) => res.send(page('Audit Log')));
   router.use((error, req, res, next) => {
