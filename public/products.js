@@ -38,7 +38,12 @@
           if (window.productEditor) edit.addEventListener('click', () => window.productEditor.open(product));
           cell.append(edit);
         }
-        if (data.capabilities.delete && (product.status !== 'inactive' || metadata)) cell.append(action(product.status === 'inactive' ? 'Restore' : 'Delete'));
+        if (data.capabilities.delete && (product.status !== 'inactive' || metadata)) {
+          const restore = product.status === 'inactive';
+          const button = window.productState ? text('button', restore ? 'Restore' : 'Delete') : action(restore ? 'Restore' : 'Delete'); button.type = 'button';
+          if (window.productState) button.addEventListener('click', () => window.productState(product, restore));
+          cell.append(button);
+        }
         row.append(cell);
       }
       rows.append(row);

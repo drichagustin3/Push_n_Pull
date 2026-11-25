@@ -3,7 +3,7 @@ const { createAuthorization } = require('../rbac/middleware');
 const { AuthError } = require('../auth/service');
 const { ProductValidationError } = require('./validation');
 const { ProductWriteError } = require('./mutations');
-const { productList, productCreate, productEdit } = require('./controller');
+const { productList, productCreate, productEdit, productTransition } = require('./controller');
 function productsRouter(pool, config, sessions) {
   const router = Router(), access = createAuthorization(pool, config);
   router.use('/api/products', (req, res, next) => { res.set('Cache-Control', 'no-store'); next(); }, sessions);
@@ -11,11 +11,13 @@ function productsRouter(pool, config, sessions) {
   const writeGuard = (req, res, next) => {
     if (req.get('origin') !== config.origin) return res.status(403).json({ error: 'invalid_origin', message: 'Request origin is not allowed.' });
     if (config.secure && !req.secure) return res.status(400).json({ error: 'https_required', message: 'A secure HTTPS connection is required.' });
-    if (!req.is('application/json')) return res.status(415).json({ error: 'unsupported_media_type', message: 'Content-Type must be application/json.' });
+    if ((!['DELETE'].includes(req.method) || req.get('content-type') || req.get('transfer-encoding') || Number(req.get('content-length')) > 0) && !req.is('application/json')) return res.status(415).json({ error: 'unsupported_media_type', message: 'Content-Type must be application/json.' });
     next();
   };
   router.post('/api/products', writeGuard, access.requireRight('product.add'), productCreate(pool));
   router.put('/api/products/:prodCode', writeGuard, access.requireRight('product.edit'), productEdit(pool));
+  router.delete('/api/products/:prodCode', writeGuard, access.requireRight('product.delete'), productTransition(pool, 'delete'));
+  router.put('/api/products/:prodCode/restore', writeGuard, access.requireRole('admin', 'superadmin'), productTransition(pool, 'restore'));
   router.use((error, req, res, next) => {
     if (res.headersSent) return next(error);
     if (error instanceof AuthError || error instanceof ProductValidationError || error instanceof ProductWriteError) return res.status(error.status).json({ error: error.code, message: error.message });
