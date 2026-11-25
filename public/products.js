@@ -5,8 +5,13 @@
   let selected = 'active', generation = 0, timer;
   function text(tag, value) { const node = document.createElement(tag); node.textContent = value ?? '—'; return node; }
   function price(value) {
-    if (typeof value !== 'string' || !/^\d+(\.\d+)?$/.test(value)) return '—';
-    const [whole, fraction = ''] = value.split('.');
+    if (value === null || value === undefined || value === '') return '—';
+    const normalized =
+      typeof value === 'number'
+        ? (Number.isFinite(value) && value >= 0 ? String(value) : null)
+        : (typeof value === 'string' && /^\d+(\.\d+)?$/.test(value.trim()) ? value.trim() : null);
+    if (!normalized) return '—';
+    const [whole, fraction = ''] = normalized.split('.');
     return '₱' + whole.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + '.' + fraction.padEnd(2, '0');
   }
   function clear() { rows.replaceChildren(); head.replaceChildren(); tabs.replaceChildren(); tabs.hidden = true; add.hidden = true; table.hidden = true; retry.hidden = true; }
