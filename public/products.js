@@ -82,7 +82,7 @@
     }
     el.textContent = message;
     el.hidden = false;
-    el.focus();
+    el.focus?.();
   }
 
   function clearFieldErrors(fields) {
@@ -95,13 +95,13 @@
   }
 
   function clear() {
-    rows.replaceChildren();
-    head.replaceChildren();
-    tabs.replaceChildren();
-    tabs.hidden = true;
-    addBtn.hidden = true;
-    table.hidden = true;
-    retry.hidden = true;
+    rows?.replaceChildren();
+    head?.replaceChildren();
+    tabs?.replaceChildren();
+    if (tabs) tabs.hidden = true;
+    if (addBtn) addBtn.hidden = true;
+    if (table) table.hidden = true;
+    if (retry) retry.hidden = true;
   }
 
   async function parseJsonSafe(response) {
@@ -126,40 +126,45 @@
     setInlineError(formError, '');
 
     if (product) {
-      editorTitle.textContent = `Edit product — ${editingProdCode}`;
-      codeInput.value = editingProdCode ?? '';
-      codeInput.disabled = true;
-      descInput.value = product.description ?? '';
-      unitInput.value = product.unit ?? '';
+      if (editorTitle) editorTitle.textContent = `Edit product — ${editingProdCode}`;
+      if (codeInput) {
+        codeInput.value = editingProdCode ?? '';
+        codeInput.disabled = true;
+      }
+      if (descInput) descInput.value = product.description ?? '';
+      if (unitInput) unitInput.value = product.unit ?? '';
     } else {
-      editorTitle.textContent = 'Add product';
-      productForm.reset();
-      codeInput.disabled = false;
+      if (editorTitle) editorTitle.textContent = 'Add product';
+      productForm?.reset();
+      if (codeInput) codeInput.disabled = false;
     }
 
-    if (typeof editorDialog.showModal === 'function') editorDialog.showModal();
-    else editorDialog.setAttribute('open', '');
-    (product ? descInput : codeInput).focus();
+    if (editorDialog) {
+      if (typeof editorDialog.showModal === 'function') editorDialog.showModal();
+      else editorDialog.setAttribute('open', '');
+    }
+    (product ? descInput : codeInput)?.focus();
   }
 
   function closeProductEditor() {
+    if (!editorDialog) return;
     if (typeof editorDialog.close === 'function' && editorDialog.open) editorDialog.close();
     else editorDialog.removeAttribute('open');
   }
 
-  productForm.addEventListener('submit', async (event) => {
+  productForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     clearFieldErrors([codeInput, descInput, unitInput]);
     setInlineError(formError, '');
 
-    const prodCode = codeInput.value.trim();
-    const description = descInput.value.trim();
-    const unit = unitInput.value.trim();
+    const prodCode = codeInput?.value.trim() ?? '';
+    const description = descInput?.value.trim() ?? '';
+    const unit = unitInput?.value.trim() ?? '';
 
     const invalid = [];
-    if (!editingProdCode && !prodCode) invalid.push(codeInput);
-    if (!description) invalid.push(descInput);
-    if (!unit) invalid.push(unitInput);
+    if (!editingProdCode && !prodCode && codeInput) invalid.push(codeInput);
+    if (!description && descInput) invalid.push(descInput);
+    if (!unit && unitInput) invalid.push(unitInput);
 
     if (invalid.length > 0) {
       for (const el of invalid) el.classList.add('input-error');
@@ -196,19 +201,24 @@
 
   function openConfirmModal({ title, message, proceedLabel, proceedClass, onConfirm }) {
     pendingConfirmAction = onConfirm;
-    confirmTitle.textContent = title;
-    confirmMessage.textContent = message;
-    confirmProceedBtn.textContent = proceedLabel;
-    confirmProceedBtn.className = proceedClass;
+    if (confirmTitle) confirmTitle.textContent = title;
+    if (confirmMessage) confirmMessage.textContent = message;
+    if (confirmProceedBtn) {
+      confirmProceedBtn.textContent = proceedLabel;
+      confirmProceedBtn.className = proceedClass;
+    }
     setInlineError(confirmError, '');
 
-    if (typeof confirmDialog.showModal === 'function') confirmDialog.showModal();
-    else confirmDialog.setAttribute('open', '');
-    confirmProceedBtn.focus();
+    if (confirmDialog) {
+      if (typeof confirmDialog.showModal === 'function') confirmDialog.showModal();
+      else confirmDialog.setAttribute('open', '');
+    }
+    confirmProceedBtn?.focus();
   }
 
   function closeConfirmModal() {
     pendingConfirmAction = null;
+    if (!confirmDialog) return;
     if (typeof confirmDialog.close === 'function' && confirmDialog.open) confirmDialog.close();
     else confirmDialog.removeAttribute('open');
   }
@@ -255,7 +265,7 @@
     });
   }
 
-  confirmProceedBtn.addEventListener('click', async () => {
+  confirmProceedBtn?.addEventListener('click', async () => {
     if (!pendingConfirmAction) return;
     setInlineError(confirmError, '');
     confirmProceedBtn.disabled = true;
@@ -275,34 +285,36 @@
     clearFieldErrors([effDateInput, unitPriceInput]);
     setInlineError(priceFormError, '');
     if (entry) {
-      priceHeading.textContent = 'Edit Price Entry';
-      effDateInput.value = (entry.effDate ?? entry.effdate ?? '').slice(0, 10);
-      unitPriceInput.value = entry.unitPrice ?? entry.unitprice ?? '';
-      priceForm.hidden = false;
-      effDateInput.focus();
+      if (priceHeading) priceHeading.textContent = 'Edit Price Entry';
+      if (effDateInput) effDateInput.value = (entry.effDate ?? entry.effdate ?? '').slice(0, 10);
+      if (unitPriceInput) unitPriceInput.value = entry.unitPrice ?? entry.unitprice ?? '';
+      if (priceForm) priceForm.hidden = false;
+      effDateInput?.focus();
     } else {
-      priceHeading.textContent = 'Add Price Entry';
-      priceForm.reset();
-      priceForm.hidden = true;
+      if (priceHeading) priceHeading.textContent = 'Add Price Entry';
+      priceForm?.reset();
+      if (priceForm) priceForm.hidden = true;
     }
   }
 
   async function loadPriceHistory() {
     if (!activePriceProduct) return;
     const code = activePriceProduct.prodcode ?? activePriceProduct.prodCode;
-    priceTitle.textContent = `Price History — ${code} (${activePriceProduct.description} · Unit: ${activePriceProduct.unit})`;
-    priceStatus.textContent = 'Loading price history…';
-    priceTable.hidden = true;
-    priceRows.replaceChildren();
-    priceHead.replaceChildren();
+    if (priceTitle) {
+      priceTitle.textContent = `Price History — ${code} (${activePriceProduct.description} · Unit: ${activePriceProduct.unit})`;
+    }
+    if (priceStatus) priceStatus.textContent = 'Loading price history…';
+    if (priceTable) priceTable.hidden = true;
+    priceRows?.replaceChildren();
+    priceHead?.replaceChildren();
 
     const isAdmin = Boolean(currentCapabilities.metadata);
     const canManagePrice = isAdmin || Boolean(currentCapabilities.priceEdit || currentCapabilities.priceDelete);
 
-    priceTabs.hidden = !isAdmin;
-    addPriceBtn.hidden = !isAdmin;
+    if (priceTabs) priceTabs.hidden = !isAdmin;
+    if (addPriceBtn) addPriceBtn.hidden = !isAdmin;
 
-    if (isAdmin) {
+    if (isAdmin && priceTabs) {
       priceTabs.replaceChildren();
       for (const key of ['active', 'inactive', 'all']) {
         const btn = text('button', key[0].toUpperCase() + key.slice(1));
@@ -325,7 +337,7 @@
       const data = await parseJsonSafe(response);
       if (handleAuthError(response)) return;
       if (!response.ok) {
-        priceStatus.textContent = data.message || 'Unable to load price history.';
+        if (priceStatus) priceStatus.textContent = data.message || 'Unable to load price history.';
         return;
       }
 
@@ -335,7 +347,9 @@
         .sort((a, b) => String(b.effDate ?? b.effdate ?? '').localeCompare(String(a.effDate ?? a.effdate ?? '')));
 
       if (list.length === 0) {
-        priceStatus.textContent = "No price records found for this product. Click '+ Add Price' to set an initial price.";
+        if (priceStatus) {
+          priceStatus.textContent = "No price records found for this product. Click '+ Add Price' to set an initial price.";
+        }
         return;
       }
 
@@ -349,7 +363,7 @@
         th.setAttribute('scope', 'col');
         headerRow.append(th);
       }
-      priceHead.append(headerRow);
+      priceHead?.append(headerRow);
 
       for (const item of list) {
         const tr = document.createElement('tr');
@@ -399,13 +413,15 @@
           tr.append(actCell);
         }
 
-        priceRows.append(tr);
+        priceRows?.append(tr);
       }
 
-      priceStatus.textContent = `${list.length} price record${list.length === 1 ? '' : 's'} (sorted by effective date, newest first).`;
-      priceTable.hidden = false;
+      if (priceStatus) {
+        priceStatus.textContent = `${list.length} price record${list.length === 1 ? '' : 's'} (sorted by effective date, newest first).`;
+      }
+      if (priceTable) priceTable.hidden = false;
     } catch {
-      priceStatus.textContent = 'Check your connection and try again.';
+      if (priceStatus) priceStatus.textContent = 'Check your connection and try again.';
     }
   }
 
@@ -413,46 +429,50 @@
     activePriceProduct = product;
     activePriceTab = 'active';
     resetPriceForm(null);
-    if (typeof priceDialog.showModal === 'function') priceDialog.showModal();
-    else priceDialog.setAttribute('open', '');
+    if (priceDialog) {
+      if (typeof priceDialog.showModal === 'function') priceDialog.showModal();
+      else priceDialog.setAttribute('open', '');
+    }
     void loadPriceHistory();
   }
 
   function closePriceModal() {
     activePriceProduct = null;
     resetPriceForm(null);
+    if (!priceDialog) return;
     if (typeof priceDialog.close === 'function' && priceDialog.open) priceDialog.close();
     else priceDialog.removeAttribute('open');
   }
 
-  addPriceBtn.addEventListener('click', () => {
+  addPriceBtn?.addEventListener('click', () => {
     resetPriceForm(null);
-    priceForm.hidden = false;
-    effDateInput.focus();
+    if (priceForm) priceForm.hidden = false;
+    effDateInput?.focus();
   });
 
-  priceCancelBtn.addEventListener('click', () => resetPriceForm(null));
+  priceCancelBtn?.addEventListener('click', () => resetPriceForm(null));
 
-  priceForm.addEventListener('submit', async (event) => {
+  priceForm?.addEventListener('submit', async (event) => {
     event.preventDefault();
     if (!activePriceProduct) return;
     clearFieldErrors([effDateInput, unitPriceInput]);
     setInlineError(priceFormError, '');
 
-    const effDate = effDateInput.value.trim();
-    const numericPrice = Number(unitPriceInput.value);
+    const effDate = effDateInput?.value.trim() ?? '';
+    const rawPrice = unitPriceInput?.value.trim() ?? '';
+    const numericPrice = Number(rawPrice);
 
-    if (!effDate || !unitPriceInput.value.trim()) {
-      if (!effDate) effDateInput.classList.add('input-error');
-      if (!unitPriceInput.value.trim()) unitPriceInput.classList.add('input-error');
+    if (!effDate || !rawPrice) {
+      if (!effDate) effDateInput?.classList.add('input-error');
+      if (!rawPrice) unitPriceInput?.classList.add('input-error');
       setInlineError(priceFormError, 'Please complete all required product fields.');
       return;
     }
 
     if (!Number.isFinite(numericPrice) || numericPrice <= 0) {
-      unitPriceInput.classList.add('input-error');
+      unitPriceInput?.classList.add('input-error');
       setInlineError(priceFormError, 'Unit price must be greater than 0.');
-      unitPriceInput.focus();
+      unitPriceInput?.focus();
       return;
     }
 
@@ -471,7 +491,7 @@
       const data = await parseJsonSafe(response);
       if (handleAuthError(response)) return;
       if (response.status === 409) {
-        effDateInput.classList.add('input-error');
+        effDateInput?.classList.add('input-error');
         setInlineError(priceFormError, 'A price record already exists for this effective date.');
         return;
       }
@@ -488,16 +508,16 @@
   });
 
   function render(data) {
-    selected = data.filter.status;
-    const metadata = Boolean(data.capabilities.metadata);
-    currentCapabilities = { ...data.capabilities };
+    selected = data.filter?.status ?? 'active';
+    const metadata = Boolean(data.capabilities?.metadata);
+    currentCapabilities = { ...currentCapabilities, ...(data.capabilities ?? {}) };
     updateClearSearchButton();
 
-    addBtn.hidden = !data.capabilities.add;
-    if (metadata) {
+    if (addBtn) addBtn.hidden = !data.capabilities?.add;
+    if (metadata && tabs) {
       tabs.hidden = false;
       for (const key of ['active', 'inactive', 'all']) {
-        const button = text('button', `${key[0].toUpperCase() + key.slice(1)} (${data.counts[key]})`);
+        const button = text('button', `${key[0].toUpperCase() + key.slice(1)} (${data.counts?.[key] ?? 0})`);
         button.type = 'button';
         button.setAttribute('aria-pressed', String(selected === key));
         button.addEventListener('click', () => {
@@ -509,18 +529,19 @@
       }
     }
 
-    const actions = data.capabilities.edit || data.capabilities.delete || data.capabilities.prices;
+    const actions = Boolean(data.capabilities?.edit || data.capabilities?.delete || data.capabilities?.prices);
     const header = document.createElement('tr');
     for (const label of ['Prod Code', 'Description', 'Unit', 'Current Price', ...(metadata ? ['Status', 'Stamp'] : []), ...(actions ? ['Actions'] : [])]) {
       const cell = text('th', label);
       cell.setAttribute('scope', 'col');
       header.append(cell);
     }
-    head.append(header);
+    head?.append(header);
 
+    const productList = Array.isArray(data.products) ? data.products : [];
     const visibleProducts = metadata
-      ? data.products
-      : data.products.filter((item) => (item.status ?? 'active') !== 'inactive');
+      ? productList
+      : productList.filter((item) => (item.status ?? 'active') !== 'inactive');
 
     for (const product of visibleProducts) {
       const isInactive = (product.status ?? 'active') === 'inactive';
@@ -547,19 +568,19 @@
 
       if (actions) {
         const cell = document.createElement('td');
-        if (data.capabilities.prices) {
+        if (data.capabilities?.prices) {
           const pricesBtn = text('button', 'Prices');
           pricesBtn.type = 'button';
           pricesBtn.addEventListener('click', () => openPriceModal(product));
           cell.append(pricesBtn);
         }
-        if (!isInactive && data.capabilities.edit) {
+        if (!isInactive && data.capabilities?.edit) {
           const editBtn = text('button', 'Edit');
           editBtn.type = 'button';
           editBtn.addEventListener('click', () => openProductEditor(product));
           cell.append(editBtn);
         }
-        if (data.capabilities.delete && (!isInactive || metadata)) {
+        if (data.capabilities?.delete && (!isInactive || metadata)) {
           const toggleBtn = text('button', isInactive ? 'Restore' : 'Delete');
           toggleBtn.type = 'button';
           toggleBtn.className = isInactive ? 'btn-restore' : 'btn-delete';
@@ -572,17 +593,19 @@
         row.append(cell);
       }
 
-      rows.append(row);
+      rows?.append(row);
     }
 
-    table.hidden = visibleProducts.length === 0;
-    const query = search.value.trim();
-    if (visibleProducts.length > 0) {
-      status.textContent = `${visibleProducts.length} product${visibleProducts.length === 1 ? '' : 's'} found.`;
-    } else if (query) {
-      status.textContent = `No products found matching '${query}'. Clear search or add a new record.`;
-    } else {
-      status.textContent = 'No products match your search and filter.';
+    if (table) table.hidden = visibleProducts.length === 0;
+    const query = search?.value.trim() ?? '';
+    if (status) {
+      if (visibleProducts.length > 0) {
+        status.textContent = `${visibleProducts.length} product${visibleProducts.length === 1 ? '' : 's'} found.`;
+      } else if (query) {
+        status.textContent = `No products found matching '${query}'. Clear search or add a new record.`;
+      } else {
+        status.textContent = 'No products match your search and filter.';
+      }
     }
   }
 
@@ -590,10 +613,10 @@
     const version = ++generation;
     clear();
     updateClearSearchButton();
-    table.setAttribute('aria-busy', 'true');
-    status.textContent = 'Loading products…';
+    table?.setAttribute('aria-busy', 'true');
+    if (status) status.textContent = 'Loading products…';
     try {
-      const response = await fetch('/api/products?' + new URLSearchParams({ search: search.value.trim(), status: selected }), {
+      const response = await fetch('/api/products?' + new URLSearchParams({ search: search?.value.trim() ?? '', status: selected }), {
         headers: { Accept: 'application/json' },
         cache: 'no-store',
       });
@@ -601,63 +624,67 @@
       if (version !== generation) return;
       if (handleAuthError(response)) return;
       if (!response.ok) {
-        status.textContent = response.status === 403
-          ? 'Product access is unavailable. Contact an administrator.'
-          : response.status === 400
-            ? (data.message || 'Invalid filter request.')
-            : 'Products could not be loaded. Try again.';
-        retry.hidden = false;
+        if (status) {
+          status.textContent = response.status === 403
+            ? 'Product access is unavailable. Contact an administrator.'
+            : response.status === 400
+              ? (data.message || 'Invalid filter request.')
+              : 'Products could not be loaded. Try again.';
+        }
+        if (retry) retry.hidden = false;
         return;
       }
       render(data);
     } catch {
       if (version === generation) {
         clear();
-        status.textContent = 'Check your connection and try again.';
-        retry.hidden = false;
+        if (status) status.textContent = 'Check your connection and try again.';
+        if (retry) retry.hidden = false;
       }
     } finally {
-      if (version === generation) table.setAttribute('aria-busy', 'false');
+      if (version === generation) table?.setAttribute('aria-busy', 'false');
     }
   }
 
-  addBtn.addEventListener('click', () => openProductEditor(null));
-  editorClose.addEventListener('click', closeProductEditor);
-  cancelEditBtn.addEventListener('click', closeProductEditor);
-  editorDialog.addEventListener('click', (e) => {
+  addBtn?.addEventListener('click', () => openProductEditor(null));
+  editorClose?.addEventListener('click', closeProductEditor);
+  cancelEditBtn?.addEventListener('click', closeProductEditor);
+  editorDialog?.addEventListener('click', (e) => {
     if (e.target === editorDialog) closeProductEditor();
   });
 
-  confirmClose.addEventListener('click', closeConfirmModal);
-  confirmCancelBtn.addEventListener('click', closeConfirmModal);
-  confirmDialog.addEventListener('click', (e) => {
+  confirmClose?.addEventListener('click', closeConfirmModal);
+  confirmCancelBtn?.addEventListener('click', closeConfirmModal);
+  confirmDialog?.addEventListener('click', (e) => {
     if (e.target === confirmDialog) closeConfirmModal();
   });
 
-  priceClose.addEventListener('click', closePriceModal);
-  priceDialog.addEventListener('click', (e) => {
+  priceClose?.addEventListener('click', closePriceModal);
+  priceDialog?.addEventListener('click', (e) => {
     if (e.target === priceDialog) closePriceModal();
   });
 
   clearSearchBtn?.addEventListener('click', () => {
-    search.value = '';
+    if (search) {
+      search.value = '';
+      search.focus();
+    }
     updateClearSearchButton();
     clearTimeout(timer);
     void load();
-    search.focus();
   });
 
-  search.addEventListener('input', () => {
+  search?.addEventListener('input', () => {
     updateClearSearchButton();
     clearTimeout(timer);
     ++generation;
     clear();
-    table.setAttribute('aria-busy', 'true');
-    status.textContent = 'Loading products…';
+    table?.setAttribute('aria-busy', 'true');
+    if (status) status.textContent = 'Loading products…';
     timer = setTimeout(() => { void load(); }, 250);
   });
 
-  retry.addEventListener('click', () => { void load(); });
+  retry?.addEventListener('click', () => { void load(); });
   window.addEventListener('focus', () => { clearTimeout(timer); void load(); });
   document.addEventListener('visibilitychange', () => {
     if (!document.hidden) {
