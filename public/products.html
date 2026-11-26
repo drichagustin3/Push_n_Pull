@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Products — Hope, Inc. ERP</title>
+<link rel="stylesheet" href="products.css" />
+</head>
+<body>
+<main id="productModule" data-module="products">
+<div class="product-heading">
+  <div>
+    <h1>Products</h1>
+    <p class="product-note">Manage product catalog items, packaging units, and effective pricing.</p>
+  </div>
+  <button type="button" id="productAdd" class="btn-primary" hidden>+ Add Product</button>
+</div>
+
+<div class="product-filters">
+  <div id="productTabs" role="group" aria-label="Product status filter" hidden></div>
+
+  <div class="search-controls">
+    <label for="productSearch">
+      Search Products
+      <input
+        type="search"
+        id="productSearch"
+        placeholder="Search by code or description..."
+      />
+    </label>
+    <button type="button" id="clearProductSearch" class="btn-secondary" hidden>Clear search</button>
+  </div>
+</div>
+
+<div id="productFeedback" class="feedback-banner" role="status" aria-live="polite">
+  <span id="productStatus">Loading products…</span>
+  <button type="button" id="productRetry" hidden>Retry</button>
+</div>
+
+<div class="product-scroll">
+  <table id="productTable" hidden>
+    <caption>Product Catalog</caption>
+    <thead id="productHead"></thead>
+    <tbody id="productRows"></tbody>
+  </table>
+</div>
+</main>
+
+<!-- Add / Edit Product Modal -->
+<dialog id="productEditor" aria-labelledby="productEditorTitle">
+<div class="dialog-top">
+  <h2 id="productEditorTitle">Add product</h2>
+  <button type="button" id="productEditorClose" class="icon-close" aria-label="Close modal">&times;</button>
+</div>
+
+<form id="productForm" novalidate>
+  <label for="productCode">
+    Product Code
+    <input type="text" id="productCode" name="prodCode" required />
+  </label>
+
+  <label for="productDescription">
+    Description
+    <input type="text" id="productDescription" name="description" required />
+  </label>
+
+  <label for="productUnit">
+    Packaging Unit
+    <select id="productUnit" name="unit" required>
+      <option value="">Select unit</option>
+      <option value="pcs">pcs</option>
+      <option value="can">can</option>
+      <option value="pair">pair</option>
+      <option value="meter">meter</option>
+      <option value="roll">roll</option>
+      <option value="box">box</option>
+      <option value="kg">kg</option>
+    </select>
+  </label>
+
+  <p id="productFormError" class="inline-error" role="alert" tabindex="-1" hidden></p>
+
+  <div class="dialog-actions">
+    <button type="submit" id="productSave" class="btn-primary">Save</button>
+    <button type="button" id="productCancel">Cancel</button>
+  </div>
+</form>
+</dialog>
+
+<!-- Confirm Delete / Restore Modal -->
+<dialog id="confirmActionDialog" aria-labelledby="confirmDialogTitle">
+<div class="dialog-top">
+  <h2 id="confirmDialogTitle">Confirm Action</h2>
+  <button type="button" id="confirmDialogClose" class="icon-close" aria-label="Close modal">&times;</button>
+</div>
+
+<p id="confirmDialogMessage" class="confirm-copy"></p>
+<p id="confirmDialogError" class="inline-error" role="alert" tabindex="-1" hidden></p>
+
+<div class="dialog-actions">
+  <button type="button" id="confirmProceedBtn" class="btn-delete">Confirm</button>
+  <button type="button" id="confirmCancelBtn">Cancel</button>
+</div>
+</dialog>
+
+<!-- Price History Modal -->
+<dialog id="price-history-modal" aria-labelledby="priceHistoryTitle">
+<div class="dialog-top">
+  <h2 id="priceHistoryTitle">Price History</h2>
+  <button type="button" id="priceHistoryClose" class="icon-close" aria-label="Close price history">&times;</button>
+</div>
+
+<div class="price-toolbar">
+  <div id="priceHistoryTabs" role="group" aria-label="Price status filter" hidden></div>
+  <button type="button" id="addPriceBtn" class="btn-primary" hidden>+ Add Price</button>
+</div>
+
+<form id="priceEntryForm" class="price-subform" novalidate hidden>
+  <h3 id="priceEntryHeading">Add Price Entry</h3>
+  <div class="price-form-grid">
+    <label for="priceEffDate">
+      Effective Date
+      <input type="date" id="priceEffDate" name="effDate" required />
+    </label>
+
+    <label for="priceUnitValue">
+      Unit Price
+      <input type="number" id="priceUnitValue" name="unitPrice" step="0.01" min="0.01" required />
+    </label>
+  </div>
+
+  <p id="priceFormError" class="inline-error" role="alert" tabindex="-1" hidden></p>
+
+  <div class="dialog-actions">
+    <button type="submit" id="priceSaveBtn" class="btn-primary">Save Price</button>
+    <button type="button" id="priceCancelBtn">Cancel</button>
+  </div>
+</form>
+
+<p id="priceHistoryStatus" class="product-note" role="status" aria-live="polite"></p>
+
+<div class="product-scroll">
+  <table id="priceHistoryTable" hidden>
+    <thead id="priceHistoryHead"></thead>
+    <tbody id="priceHistoryRows"></tbody>
+  </table>
+</div>
+</dialog>
+
+<script src="products.js" defer></script>
+</body>
+</html>
