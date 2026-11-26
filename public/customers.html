@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customers — Hope, Inc. ERP</title>
+  <link rel="stylesheet" href="customers.css" />
+</head>
+<body>
+  <main id="customerList">
+    <div class="customer-heading">
+      <div>
+        <h1>Customers</h1>
+        <p class="customer-note">Manage customer records, billing addresses, and payment terms.</p>
+      </div>
+      <button type="button" id="customerAdd" class="btn-primary" hidden>+ Add Customer</button>
+    </div>
+
+    <div class="customer-filters">
+      <div id="customerTabs" role="group" aria-label="Customer status filter" hidden></div>
+
+      <label for="customerSearch">
+        Search Customers
+        <input
+          type="search"
+          id="customerSearch"
+          placeholder="Search by number, name, or address..."
+        />
+      </label>
+    </div>
+
+    <p id="customerStatus" class="customer-note" role="status" aria-live="polite">Loading customers…</p>
+    <button type="button" id="customerRetry" hidden>Retry</button>
+
+    <div class="customer-scroll">
+      <table id="customerTable" hidden>
+        <caption>Customer Directory</caption>
+        <thead id="customerHead"></thead>
+        <tbody id="customerRows"></tbody>
+      </table>
+    </div>
+  </main>
+
+  <dialog id="customerEditor" aria-labelledby="customerEditorTitle">
+    <h2 id="customerEditorTitle">Add customer</h2>
+    <form id="customerForm">
+      <label for="customerNumber">
+        Customer Number
+        <input type="text" id="customerNumber" name="custNo" required />
+      </label>
+
+      <label for="customerName">
+        Customer Name
+        <input type="text" id="customerName" name="custName" required />
+      </label>
+
+      <label for="customerAddress">
+        Address
+        <input type="text" id="customerAddress" name="address" required />
+      </label>
+
+      <label for="customerTerms">
+        Payment Terms
+        <select id="customerTerms" name="payTerms" required>
+          <option value="">Select terms</option>
+          <option value="COD">COD</option>
+          <option value="Net 15">Net 15</option>
+          <option value="Net 30">Net 30</option>
+          <option value="Net 45">Net 45</option>
+          <option value="Prepaid">Prepaid</option>
+        </select>
+      </label>
+
+      <p id="customerFormError" role="alert" tabindex="-1"></p>
+
+      <div>
+        <button type="submit" id="customerSave" class="btn-primary">Save</button>
+        <button type="button" id="customerCancel">Cancel</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="customers.js" defer></script>
+  <script src="customer-editor.js" defer></script>
+</body>
+</html>
