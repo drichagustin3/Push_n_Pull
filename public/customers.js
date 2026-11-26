@@ -45,7 +45,15 @@
       const row = document.createElement('tr');
       if (customer.status === 'inactive') row.className = 'customer-inactive';
       for (const field of ['custno', 'custname', 'address', 'payterm']) row.append(text('td', customer[field]));
-      if (metadata) row.append(text('td', customer.status === 'inactive' ? 'Inactive' : 'Active'), text('td', customer.stamp));
+      if (metadata) {
+  const isInactive = customer.status === 'inactive';
+  const statusCell = document.createElement('td');
+  const badge = document.createElement('span');
+  badge.className = `badge ${isInactive ? 'badge-inactive' : 'badge-active'}`;
+  badge.textContent = isInactive ? 'Inactive' : 'Active';
+  statusCell.append(badge);
+  row.append(statusCell, text('td', customer.stamp));
+}
       if (actions) {
         const cell = document.createElement('td');
         if (customer.status !== 'inactive' && data.capabilities.edit) cell.append(action('Edit', customer));

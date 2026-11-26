@@ -163,6 +163,7 @@
   border-radius: 999px;
   font-size: .75rem;
   font-weight: 700;
+  white-space: nowrap;
 }
 
 .badge-active {
