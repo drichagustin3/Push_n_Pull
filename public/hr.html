@@ -106,19 +106,19 @@
       <main>
         <div class="hr-top-bar">
           <div class="hr-tabs" role="tablist" aria-label="HR sections">
-            <button type="button" class="hr-tab" role="tab" id="tab-employees" data-tab="employees" aria-selected="false">
+            <button type="button" class="hr-tab is-active" role="tab" id="tab-employees" data-tab="employees" aria-selected="true">
               Employees
             </button>
             <button type="button" class="hr-tab" role="tab" id="tab-jobs" data-tab="jobs" aria-selected="false">
               Jobs
             </button>
-            <button type="button" class="hr-tab is-active" role="tab" id="tab-departments" data-tab="departments" aria-selected="true">
+            <button type="button" class="hr-tab" role="tab" id="tab-departments" data-tab="departments" aria-selected="false">
               Departments
             </button>
           </div>
 
           <button type="button" id="hrAddBtn" class="hr-btn hr-btn-primary">
-            + Add Department
+            + Add Employee
           </button>
         </div>
 
@@ -143,7 +143,7 @@
               type="search"
               id="hrSearchInput"
               class="hr-input"
-              placeholder="Search by code, name, or title..."
+              placeholder="Search by employee ID, first name, or last name..."
               autocomplete="off"
             />
           </div>
@@ -159,23 +159,90 @@
         <!-- Status / Loading / Empty / Error Banner -->
         <div id="hrFeedback" class="hr-feedback" role="status" aria-live="polite" hidden></div>
 
-        <!-- Responsive Data Table -->
-        <div class="hr-table-wrap">
-          <table class="hr-table" aria-describedby="hrTableCaption">
-            <caption id="hrTableCaption" class="sr-only">HR records table</caption>
-            <thead id="hrTableHead"></thead>
-            <tbody id="hrTableBody"></tbody>
-          </table>
+        <!-- Master-Detail Layout: Directory Table + Employee Profile View -->
+        <div class="hr-workspace-split">
+          <div class="hr-table-wrap">
+            <table class="hr-table" aria-describedby="hrTableCaption">
+              <caption id="hrTableCaption" class="sr-only">HR records table</caption>
+              <thead id="hrTableHead"></thead>
+              <tbody id="hrTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Employee Profile View / Drawer -->
+          <aside id="hrProfilePanel" class="hr-profile-panel" aria-label="Employee profile details" hidden>
+            <div class="hr-profile-header">
+              <div>
+                <p class="hr-profile-eyebrow">Employee Profile</p>
+                <h2 id="hrProfileName">Select an employee</h2>
+                <p id="hrProfileSubtitle" class="hr-profile-sub"></p>
+              </div>
+              <button type="button" id="hrProfileClose" class="hr-icon-btn" aria-label="Close profile">&times;</button>
+            </div>
+
+            <div class="hr-profile-badges">
+              <span id="hrProfileStatusBadge" class="badge badge-active">Active</span>
+              <span id="hrProfileAccountBadge" class="badge badge-role">Linked Account</span>
+            </div>
+
+            <dl class="hr-profile-grid">
+              <div>
+                <dt>Employee No.</dt>
+                <dd id="hrProfEmpNo">—</dd>
+              </div>
+              <div>
+                <dt>Gender</dt>
+                <dd id="hrProfGender">—</dd>
+              </div>
+              <div>
+                <dt>Birth Date</dt>
+                <dd id="hrProfBirthDate">—</dd>
+              </div>
+              <div>
+                <dt>Hire Date</dt>
+                <dd id="hrProfHireDate">—</dd>
+              </div>
+              <div>
+                <dt>Separation Date</dt>
+                <dd id="hrProfSepDate">—</dd>
+              </div>
+              <div>
+                <dt>Department</dt>
+                <dd id="hrProfDept">—</dd>
+              </div>
+              <div>
+                <dt>Job Title</dt>
+                <dd id="hrProfJob">—</dd>
+              </div>
+              <div>
+                <dt>User Account & Role</dt>
+                <dd id="hrProfAccount">—</dd>
+              </div>
+            </dl>
+
+            <div id="hrProfileStampRow" class="hr-profile-stamp">
+              <span>Last Updated:</span>
+              <strong id="hrProfStamp">—</strong>
+            </div>
+
+            <div id="hrProfileActions" class="hr-profile-actions">
+              <button type="button" id="hrProfileEditBtn" class="hr-btn hr-btn-secondary hr-btn-sm">Edit Profile</button>
+              <button type="button" id="hrProfileToggleBtn" class="hr-btn hr-btn-danger-outline hr-btn-sm">Deactivate</button>
+            </div>
+          </aside>
         </div>
       </main>
     </div>
   </div>
 
+  <!-- Toast Notification -->
+  <div id="hrToast" class="hr-toast" role="status" aria-live="polite" hidden></div>
+
   <!-- Add / Edit Modal -->
   <div id="hrModalBackdrop" class="hr-modal-backdrop" hidden>
     <div class="hr-modal" role="dialog" aria-modal="true" aria-labelledby="hrModalTitle">
       <div class="hr-modal-header">
-        <h2 id="hrModalTitle">Add Department</h2>
+        <h2 id="hrModalTitle">Add Employee</h2>
         <button type="button" id="hrModalClose" class="hr-icon-btn" aria-label="Close modal">&times;</button>
       </div>
 
@@ -188,6 +255,22 @@
           <button type="submit" id="hrModalSave" class="hr-btn hr-btn-primary">Save Record</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Soft Delete / Restore Confirmation Modal -->
+  <div id="hrConfirmBackdrop" class="hr-modal-backdrop" hidden>
+    <div class="hr-modal hr-modal-sm" role="dialog" aria-modal="true" aria-labelledby="hrConfirmTitle">
+      <div class="hr-modal-header">
+        <h2 id="hrConfirmTitle">Confirm Status Change</h2>
+        <button type="button" id="hrConfirmClose" class="hr-icon-btn" aria-label="Close confirmation">&times;</button>
+      </div>
+      <p id="hrConfirmMessage" class="hr-confirm-copy"></p>
+      <p id="hrConfirmError" class="hr-form-error" hidden></p>
+      <div class="hr-modal-actions">
+        <button type="button" id="hrConfirmCancel" class="hr-btn hr-btn-secondary">Cancel</button>
+        <button type="button" id="hrConfirmProceed" class="hr-btn hr-btn-danger-outline">Confirm</button>
+      </div>
     </div>
   </div>
 
