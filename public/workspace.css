@@ -29,26 +29,17 @@ body { margin: 0; }
   overflow-y: auto;
 }
 .ws-sidebar a {
-  color: var(--teal-hover);
-  background: rgba(15, 118, 110, 0.08);
-  border: 1px solid transparent;
+  color: var(--text-espresso);
   text-decoration: none;
   display: block;
-  padding: .65rem .85rem;
-  border-radius: .5rem;
-  font-weight: 500;
-  transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease;
 }
 .ws-brand { font-weight: 700; letter-spacing: .04em; color: var(--text-espresso); }
 .ws-sidebar a:hover {
-  background: var(--teal-tint);
-  color: var(--teal-hover);
-  border-color: rgba(15, 118, 110, 0.25);
+  color: var(--teal-primary);
 }
 .ws-sidebar a[aria-current] {
-  background: var(--teal-primary);
-  color: #FFFFFF;
-  font-weight: 600;
+  font-weight: 700;
+  color: var(--teal-primary);
 }
 .ws-sidebar button {
   margin-top: auto;
@@ -63,15 +54,18 @@ body { margin: 0; }
   background: var(--border-sand);
 }
 .ws-main { margin-left: 225px; padding: 1.5rem; }
-.ws-header > :first-child {
-  display: inline-flex;
+.ws-header {
+  display: flex;
+  justify-content: space-between;
   align-items: center;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--teal-primary);
-  border-radius: 999px;
-  background-color: var(--teal-tint);
-  color: var(--teal-primary);
+  padding: 1rem 1.25rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-sand);
+  border-radius: .5rem;
+}
+.ws-header > :first-child {
   font-weight: 700;
+  color: var(--text-espresso);
 }
 .ws-main main {
   max-width: 1150px;
