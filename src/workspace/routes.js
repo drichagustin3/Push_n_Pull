@@ -6,6 +6,7 @@ const { readMetrics, MetricsDependencyError } = require('./metrics');
 const { page } = require('./view');
 const { customerPage } = require('../customers/view');
 const { productPage } = require('../products/view');
+const { departmentPage } = require('../departments/view');
 
 function workspaceRouter(pool, config, sessions) {
   const router = Router();
@@ -17,7 +18,11 @@ function workspaceRouter(pool, config, sessions) {
   router.get(['/api/navigation', '/api/me/navigation'], access.requireAccess, (req, res) => res.json(navigation(req.access)));
   router.get('/api/dashboard/metrics', access.requireAccess, async (req, res) => res.json(await readMetrics(pool, req.access)));
   router.get('/workspace', access.requireAccess, (req, res) => res.send(page('Main page', true)));
-  for (const [code, label] of Object.entries(MODULES)) router.get('/workspace/' + code, access.requireModuleAccess(code), (req, res) => res.send(code === 'customer' ? customerPage() : code === 'product' ? productPage() : page(label)));
+  const modulePages = { customer: customerPage, product: productPage, human_resources: departmentPage };
+  for (const [code, label] of Object.entries(MODULES)) {
+    router.get('/workspace/' + code, access.requireModuleAccess(code),
+      (req, res) => res.send(modulePages[code]?.() ?? page(label)));
+  }
   router.get('/workspace/settings', access.requireRole('superadmin'), (req, res) => res.send(page('System Settings')));
   router.get('/workspace/audit', access.requireRole('superadmin'), (req, res) => res.send(page('Audit Log')));
   router.use((error, req, res, next) => {

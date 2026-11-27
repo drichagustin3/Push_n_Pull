@@ -8,6 +8,7 @@ const { usersRouter } = require('./users/routes');
 const { workspaceRouter } = require('./workspace/routes');
 const { customersRouter } = require('./customers/routes');
 const { productsRouter } = require('./products/routes');
+const { departmentsRouter } = require('./departments/routes');
 
 function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions } = {}) {
   const app = express();
@@ -36,6 +37,7 @@ function createApp({ pool, authConfig, sessionStore, resetConfig, resetOptions }
     app.use(usersRouter(pool, authConfig, sessions.middleware));
     app.use(customersRouter(pool, authConfig, sessions.middleware));
     app.use(productsRouter(pool, authConfig, sessions.middleware));
+    app.use(departmentsRouter(pool, authConfig, sessions.middleware));
     app.use(workspaceRouter(pool, authConfig, sessions.middleware));
   }
 

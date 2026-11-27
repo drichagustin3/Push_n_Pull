@@ -1,0 +1,16 @@
+﻿#departments > header, #departmentFilters { display: flex; align-items: end; gap: 1rem; flex-wrap: wrap; }
+#departments > header { justify-content: space-between; align-items: center; }
+#departments label { display: grid; gap: .35rem; }
+#departments input, #departments select, #departments button { font: inherit; padding: .55rem .75rem; }
+#departments button { border: 1px solid #0f766e; border-radius: .35rem; background: white; color: #174b47; }
+#departments button:not(:disabled) { cursor: pointer; }
+#departments [hidden] { display: none; }
+.department-table { overflow-x: auto; }
+#departmentTable { width: 100%; border-collapse: collapse; }
+#departmentTable th, #departmentTable td { padding: .75rem; text-align: left; border-bottom: 1px solid #ddd5ce; }
+#departmentTable th { background: #faf7f2; }
+#departmentTable button + button { margin-inline-start: .4rem; }
+#departmentDialog { width: min(29rem, calc(100vw - 3rem)); border: 1px solid #7c7168; border-radius: .7rem; padding: 1.5rem; }
+#departmentDialog::backdrop { background: #0f172a99; }
+#departmentFields label { margin-block: .8rem; }
+#departmentError { color: #991b1b; }
